@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { Concessionaire } from "../data/mockConcessionaires";
+import { Concessionaire } from "../../data/mockConcessionaires";
 
 interface ConcessionaireItemProps {
   concessionaire: Concessionaire;

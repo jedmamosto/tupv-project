@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Concessionaire,
   mockConcessionaires,
-} from "../components/data/mockConcessionaires";
+} from "../data/mockConcessionaires";
 
 export const useConcessionaires = () => {
   const [concessionaires, setConcessionaires] = useState<Concessionaire[]>([]);
