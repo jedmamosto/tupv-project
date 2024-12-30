@@ -12,7 +12,6 @@ export const useConcessionaires = () => {
   useEffect(() => {
     const fetchConcessionaires = async () => {
       try {
-        // Simulate API call delay
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setConcessionaires(mockConcessionaires);
         setLoading(false);
