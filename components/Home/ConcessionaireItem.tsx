@@ -7,10 +7,10 @@ interface ConcessionaireItemProps {
   onPress: (id: string) => void;
 }
 
-export const ConcessionaireItem: React.FC<ConcessionaireItemProps> = ({
+function ConcessionaireItem({
   concessionaire,
   onPress,
-}) => {
+}: ConcessionaireItemProps) {
   return (
     <TouchableOpacity
       onPress={() => onPress(concessionaire.id)}
@@ -22,4 +22,6 @@ export const ConcessionaireItem: React.FC<ConcessionaireItemProps> = ({
       </Text>
     </TouchableOpacity>
   );
-};
+}
+
+export default ConcessionaireItem;

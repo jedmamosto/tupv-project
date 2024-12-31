@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, ActivityIndicator, Text } from "react-native";
 import { Header } from "../../components/Home/Header";
-import { ConcessionaireItem } from "../../components/Home/ConcessionaireItem";
+import ConcessionaireItem from "../../components/Home/ConcessionaireItem";
 import {
   Concessionaire,
   mockConcessionaires,
