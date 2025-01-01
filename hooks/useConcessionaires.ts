@@ -18,6 +18,7 @@ export const useConcessionaires = () => {
       } catch (err) {
         setError("Failed to fetch concessionaires");
         setLoading(false);
+        console.error(err)
       }
     };
 
