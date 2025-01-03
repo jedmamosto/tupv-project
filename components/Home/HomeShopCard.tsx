@@ -8,7 +8,7 @@ interface ShopCardProps {
   onItemPress: (shopId: string, itemId: string) => void;
 }
 
-export default function ShopCard({
+export default function HomeShopCard({
   shop,
   onShopPress,
   onItemPress,

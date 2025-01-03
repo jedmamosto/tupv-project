@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, ActivityIndicator, Text } from "react-native";
-import ShopCard from "../../components/Home/ShopCard";
 import BottomNav from "../../components/Home/BottomNav";
 import { mockShops } from "../../data/mockData";
 import { Shop } from "../../types/shop";
 import ShopScreen from "../../components/Shop/ShopScreen";
+import HomeShopCard from "@/components/Home/HomeShopCard";
 
 export default function Home() {
   const [shops, setShops] = useState<Shop[]>([]);
@@ -65,7 +65,7 @@ export default function Home() {
           Check us out!
         </Text>
         {shops.map((shop) => (
-          <ShopCard
+          <HomeShopCard
             key={shop.id}
             shop={shop}
             onShopPress={handleShopPress}
