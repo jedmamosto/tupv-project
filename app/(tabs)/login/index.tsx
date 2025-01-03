@@ -9,7 +9,7 @@ export default function Login() {
     const [emailError, setEmailError] = useState('');
 
     const [password, setPassword] = useState('');
-    const [passwordError, setPasswordError] = useState('');
+    const [passwordError, setPasswordError] = useState(''); // change error here to only one
 
     const validateEmail = (text: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
