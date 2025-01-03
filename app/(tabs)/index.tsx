@@ -1,62 +1,66 @@
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, ActivityIndicator, Text } from "react-native";
-import { Header } from "../../components/Home/Header";
-import ConcessionaireItem from "../../components/Home/ConcessionaireItem";
-import {
-  Concessionaire,
-  mockConcessionaires,
-} from "../../data/mockConcessionaires";
+import ShopCard from "../../components/Home/ShopCard";
+import BottomNav from "../../components/Home/BottomNav";
+import { mockShops } from "../../data/mockConcessionaires";
+import { Shop } from "../../types/shop";
 
-export default function Home() {
-  const [concessionaires, setConcessionaires] = useState<Concessionaire[]>([]);
+export default function HomeScreen() {
+  const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentTab, setCurrentTab] = useState<"home" | "cart" | "profile">(
+    "home"
+  );
 
   useEffect(() => {
-    const fetchConcessionaires = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setConcessionaires(mockConcessionaires);
-      setLoading(false);
+    const fetchShops = async () => {
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        setShops(mockShops);
+      } catch (error) {
+        console.error("Error fetching shops:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchConcessionaires();
+    fetchShops();
   }, []);
 
-  const handleMenuPress = () => {
-    console.log("Menu pressed");
-  };
+  function handleShopPress(shopId: string) {
+    console.log(`Navigate to shop: ${shopId}`);
+  }
 
-  const handleConcessionairePress = (id: string) => {
-    console.log(`Concessionaire ${id} pressed`);
-  };
+  function handleItemPress(shopId: string, itemId: string) {
+    console.log(`Navigate to item: ${itemId} in shop: ${shopId}`);
+  }
+
+  function handleTabPress(tab: "home" | "cart" | "profile") {
+    setCurrentTab(tab);
+  }
 
   if (loading) {
     return (
-      <View className="flex-1 bg-white">
-        <Header onMenuPress={handleMenuPress} />
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#4B5563" />
-        </View>
+      <View className="flex-1 bg-light justify-center items-center">
+        <ActivityIndicator size="large" color="#3d5300" />
+        <Text className="text-primary mt-4">Loading shops...</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white mt-14">
-      <Header onMenuPress={handleMenuPress} />
-      <ScrollView className="flex-1">
-        <View className="p-4">
-          <Text className="text-8xl font-bold mb-4 text-gray-800">
-            Application Home Screen
-          </Text>
-          {concessionaires.map((concessionaire) => (
-            <ConcessionaireItem
-              key={concessionaire.id}
-              concessionaire={concessionaire}
-              onPress={handleConcessionairePress}
-            />
-          ))}
-        </View>
+    <View className="flex-1 bg-light">
+      <ScrollView className="flex-1 px-4 pt-10 pb-4">
+        {shops.map((shop) => (
+          <ShopCard
+            key={shop.id}
+            shop={shop}
+            onShopPress={handleShopPress}
+            onItemPress={handleItemPress}
+          />
+        ))}
       </ScrollView>
+      <BottomNav currentTab={currentTab} onTabPress={handleTabPress} />
     </View>
   );
 }
