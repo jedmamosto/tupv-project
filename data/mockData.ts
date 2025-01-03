@@ -85,20 +85,6 @@ export const mockShops: Shop[] = [
         image: require("../assets/images/placeholder-featured.jpg"),
         available: true,
       },
-      {
-        id: "7",
-        name: "Featured Item 7",
-        price: 7.99,
-        image: require("../assets/images/placeholder-featured.jpg"),
-        available: true,
-      },
-      {
-        id: "8",
-        name: "Featured Item 8",
-        price: 15.99,
-        image: require("../assets/images/placeholder-featured.jpg"),
-        available: true,
-      },
     ],
     menuItems: [
       {
