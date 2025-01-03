@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Concessionaire,
-  mockConcessionaires,
-} from "../data/mockConcessionaires";
+import { Concessionaire, mockConcessionaires } from "../data/mockData";
 
 export const useConcessionaires = () => {
   const [concessionaires, setConcessionaires] = useState<Concessionaire[]>([]);

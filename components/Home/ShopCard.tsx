@@ -21,8 +21,8 @@ export default function ShopCard({
             ? { uri: shop.coverImage }
             : shop.coverImage
         }
-        resizeMode="cover"
         className="w-full h-40"
+        resizeMode="cover"
       />
 
       <View className="p-4">

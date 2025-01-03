@@ -2,15 +2,17 @@ import React, { useState, useEffect } from "react";
 import { View, ScrollView, ActivityIndicator, Text } from "react-native";
 import ShopCard from "../../components/Home/ShopCard";
 import BottomNav from "../../components/Home/BottomNav";
-import { mockShops } from "../../data/mockConcessionaires";
+import { mockShops } from "../../data/mockData";
 import { Shop } from "../../types/shop";
+import ShopScreen from "../../components/Shop/ShopScreen";
 
-export default function HomeScreen() {
+export default function Home() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentTab, setCurrentTab] = useState<"home" | "cart" | "profile">(
     "home"
   );
+  const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchShops = async () => {
@@ -28,7 +30,7 @@ export default function HomeScreen() {
   }, []);
 
   function handleShopPress(shopId: string) {
-    console.log(`Navigate to shop: ${shopId}`);
+    setSelectedShopId(shopId);
   }
 
   function handleItemPress(shopId: string, itemId: string) {
@@ -37,6 +39,14 @@ export default function HomeScreen() {
 
   function handleTabPress(tab: "home" | "cart" | "profile") {
     setCurrentTab(tab);
+  }
+
+  function handleCloseShop() {
+    setSelectedShopId(null);
+  }
+
+  if (selectedShopId) {
+    return <ShopScreen shopId={selectedShopId} onClose={handleCloseShop} />;
   }
 
   if (loading) {
@@ -50,7 +60,10 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-light">
-      <ScrollView className="flex-1 px-4 pt-10 pb-4">
+      <ScrollView className="flex-1 pt-8 px-4 pb-4">
+        <Text className="text-2xl font-extrabold italic text-primary mb-6">
+          Check us out!
+        </Text>
         {shops.map((shop) => (
           <ShopCard
             key={shop.id}
