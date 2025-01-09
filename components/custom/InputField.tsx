@@ -6,6 +6,8 @@ interface InputFieldProps extends TextInputProps {
     label: string;
     error?: string;
     helperText?: string;
+    containerClass?: string;
+    editable?: boolean;
     onChangeText: (text: string) => void;
 }
 
@@ -13,6 +15,8 @@ export default function InputField({
     label,
     error,
     helperText,
+    containerClass,
+    editable = true,
     onChangeText,
     value,
     placeholder,
@@ -25,12 +29,18 @@ export default function InputField({
 
     const inputClasses = cn(
         'w-full h-12 px-4 text-base rounded-lg bg-white',
-        isFocused ? focusMode : 'border-secondary-100 border-2',
+        editable
+            ? isFocused
+                ? focusMode
+                : 'border-secondary-100 border-2'
+            : 'bg-secondary-50 border-secondary-100 border-2',
         error ? errorMode : ''
     );
 
+    const viewClass = cn('mb-4 w-full gap-1', containerClass);
+
     return (
-        <View className="mb-4 w-full gap-1">
+        <View className={viewClass}>
             <Text className="mb-2 text-base font-medium text-primary">
                 {label}
             </Text>
@@ -44,6 +54,7 @@ export default function InputField({
                 placeholder={placeholder}
                 secureTextEntry={secureTextEntry}
                 placeholderTextColor={error ? '#ffffff' : '#77874d'}
+                editable={editable}
             />
 
             {error ? (

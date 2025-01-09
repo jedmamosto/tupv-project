@@ -21,8 +21,8 @@ export const Button: React.FC<ButtonProps> = ({
 
     const pressableStyle = cn(
         isSecondary
-            ? 'flex w-full items-center rounded-lg border-primary border-2 bg-gray-50 py-4'
-            : 'flex w-full items-center rounded-lg bg-primary py-4',
+            ? 'flex w-full justify-center items-center rounded-lg border-primary border-2 bg-gray-50 py-4'
+            : 'flex w-full items-center justify-center rounded-lg bg-primary py-4',
         pressableClassName
     );
 
