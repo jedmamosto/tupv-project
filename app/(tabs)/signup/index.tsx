@@ -9,19 +9,53 @@ export default function SignUp() {
         name: '',
         email: '',
         password: '',
+        confirmedPassword: '',
         idNumber: '',
     });
 
-    const [error, setError] = useState(''); // make errors here per data
+    const [confirmedMode, setConfirmedMode] = useState(false);
+
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [idNumberError, setIdNumberError] = useState('');
 
     const validateEmail = (text: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(text)) {
-            setError('Please enter a valid email address');
+            setEmailError('Please enter a valid email address');
         } else {
-            setError('');
+            setEmailError('');
         }
     };
+
+    const validatePassword = (text: string) => {
+        if (text.length < 8) {
+            setPasswordError('Password must be at least 8 characters');
+        } else {
+            setPasswordError('');
+        }
+    };
+
+    const passwordMatch = (password: string, confirmPassword: string) => {
+        if (!confirmPassword) return;
+
+        if (password !== confirmPassword) {
+            setPasswordError('Passwords do not match');
+        } else {
+            setPasswordError('');
+        }
+    };
+
+    const validateIdNumber = (text: string) => {
+        const idPattern = /^TUPV-[0-9]{2}-[0-9]{4}$/;
+
+        if (!idPattern.test(text)) {
+            setIdNumberError('ID must follow format: TUPV-YY-NNNN');
+        } else {
+            setIdNumberError('');
+        }
+    };
+
     return (
         <View className="flex h-screen w-screen flex-col items-center justify-center bg-light p-6">
             <Text className="mb-6 text-4xl font-bold text-primary">
@@ -35,9 +69,7 @@ export default function SignUp() {
                         ...prev,
                         name: text,
                     }));
-                    validateEmail(text);
                 }}
-                error={error}
                 placeholder="Juan De La Cruz"
                 keyboardType="default"
                 autoCapitalize="words"
@@ -50,7 +82,7 @@ export default function SignUp() {
                     setSignUpData((prev) => ({ ...prev, email: text }));
                     validateEmail(text);
                 }}
-                error={error}
+                error={emailError}
                 placeholder="juandelacruz@email.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -61,28 +93,60 @@ export default function SignUp() {
                 value={signUpData.password}
                 onChangeText={(text) => {
                     setSignUpData((prev) => ({ ...prev, password: text }));
+                    validatePassword(text);
                 }}
-                error={error}
+                error={passwordError}
                 placeholder="Your password"
-                keyboardType="visible-password"
+                secureTextEntry={true}
                 autoCapitalize="none"
                 helperText="Enter your registered password"
+            />
+            <InputField
+                label="Confirm Password"
+                value={signUpData.confirmedPassword}
+                onChangeText={(text) => {
+                    setSignUpData((prev) => ({
+                        ...prev,
+                        confirmedPassword: text,
+                    }));
+                    validatePassword(text);
+                    passwordMatch(signUpData.password, text);
+                }}
+                error={passwordError}
+                placeholder="Your password"
+                secureTextEntry={true}
+                autoCapitalize="none"
+                helperText="Confirm your password"
             />
             <InputField
                 label="ID Number"
                 value={signUpData.idNumber}
                 onChangeText={(text) => {
-                    setSignUpData((prev) => ({ ...prev, idNumber: text }));
+                    let formatted = text.toUpperCase();
+
+                    if (formatted.length === 4 && !formatted.includes('-')) {
+                        formatted += '-';
+                    } else if (
+                        formatted.length === 7 &&
+                        formatted.split('-').length === 2
+                    ) {
+                        formatted += '-';
+                    }
+
+                    setSignUpData((prev) => ({ ...prev, idNumber: formatted }));
+                    validateIdNumber(formatted);
                 }}
-                error={error}
+                error={idNumberError}
                 placeholder="Your ID Number"
                 keyboardType="default"
                 autoCapitalize="none"
                 helperText="Enter your ID Number"
             />
+            {/* TODO: Add QR Scanner here to confirm ID number*/}
             <Button
                 pressableClassName="mt-4"
                 label="Sign Up"
+                // TODO: Add final validations upon press
                 onPress={() => console.log('the button is pressed')}
             />
         </View>
