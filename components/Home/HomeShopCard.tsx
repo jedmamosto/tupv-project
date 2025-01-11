@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, Pressable } from "react-native";
+import { View, Text, TouchableOpacity, Pressable } from "react-native";
 import { Shop } from "../../types/shop";
+import { Image } from "expo-image";
 
 interface ShopCardProps {
   shop: Shop;
@@ -22,7 +23,7 @@ export default function HomeShopCard({
             : shop.coverImage
         }
         className="w-full h-40"
-        resizeMode="cover"
+        contentFit="cover"
       />
 
       <View className="p-4">
@@ -42,7 +43,7 @@ export default function HomeShopCard({
                     : item.image
                 }
                 className="w-full h-24 rounded-lg"
-                resizeMode="cover"
+                contentFit="cover"
               />
             </Pressable>
           ))}

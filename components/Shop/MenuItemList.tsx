@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Minus, Plus, Info } from "react-native-feather";
 import { MenuItem as MenuItemType } from "../../types/shop";
 import ProductOptions from "./ProductOptions";
+import { Image } from "expo-image";
 
 interface MenuItemProps {
   item: MenuItemType;
@@ -50,6 +51,7 @@ export default function MenuItemList({
             typeof item.image === "string" ? { uri: item.image } : item.image
           }
           className="w-16 h-16 rounded-full"
+          contentFit="cover"
         />
         <View className="flex-1 ml-4">
           <View className="flex-row justify-between items-start">

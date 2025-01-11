@@ -5,6 +5,7 @@ import { mockShops } from "../../data/mockData";
 import type { Shop } from "../../types/shop";
 import HomeShopCard from "../../components/Home/HomeShopCard";
 import { HomeScreenProps } from "../../types/navigations";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 function HomeScreen({ navigation }: HomeScreenProps) {
   const [shops, setShops] = useState<Shop[]>([]);
@@ -52,7 +53,7 @@ function HomeScreen({ navigation }: HomeScreenProps) {
   }
 
   return (
-    <View className="flex-1 bg-light">
+    <SafeAreaView className="flex-1 bg-light">
       {currentTab === "home" && (
         <ScrollView className="flex-1 pt-8 px-4 pb-4">
           <Text className="text-2xl font-extrabold italic text-primary mb-6">
@@ -81,7 +82,7 @@ function HomeScreen({ navigation }: HomeScreenProps) {
         </View>
       )}
       <BottomNav currentTab={currentTab} onTabPress={handleTabPress} />
-    </View>
+    </SafeAreaView>
   );
 }
 
