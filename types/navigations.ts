@@ -4,6 +4,8 @@ import { RouteProp } from "@react-navigation/native";
 export type RootStackParamList = {
   Home: undefined;
   Shop: { shopId: string };
+  Login: undefined;
+  SignUp: undefined;
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -14,7 +16,19 @@ export type ShopScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "Shop"
 >;
+export type LoginScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Login"
+>;
+export type SignUpScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "SignUp"
+>;
+
 export type ShopScreenRouteProp = RouteProp<RootStackParamList, "Shop">;
+export type LoginScreenRouteProp = RouteProp<RootStackParamList, "Login">;
+export type SignUpScreenRouteProp = RouteProp<RootStackParamList, "SignUp">;
+
 
 export interface HomeScreenProps {
   navigation: HomeScreenNavigationProp;
@@ -23,4 +37,12 @@ export interface HomeScreenProps {
 export interface ShopScreenProps {
   navigation: ShopScreenNavigationProp;
   route: ShopScreenRouteProp;
+}
+
+export interface LoginScreenProps {
+  navigation: LoginScreenNavigationProp;
+}
+
+export interface SignUpScreenProps {
+  navigation: SignUpScreenNavigationProp;
 }

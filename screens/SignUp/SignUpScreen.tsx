@@ -8,12 +8,13 @@ import {
     Platform,
     StatusBar,
 } from 'react-native';
-import InputField from '../../../components/custom/InputField';
+import InputField from '@/components/custom/InputField';
 import { useState } from 'react';
 import { Button } from '@/components/custom/Button';
 import QRScanner from '@/components/signup/QRScanner';
+import { SignUpScreenProps } from '@/types/navigations';
 
-export default function SignUp() {
+export default function SignUpScreen({ navigation }: SignUpScreenProps) {
     const [signUpData, setSignUpData] = useState({
         name: '',
         email: '',
@@ -76,7 +77,7 @@ export default function SignUp() {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
             >
-                <ScrollView contentContainerClassName="flex-1 items-center justify-center p-6">
+                <ScrollView contentContainerClassName="flex-1 min-h-screen justify-center items-center p-6">
                     <Text className="mb-6 text-4xl font-bold text-primary">
                         Sign Up
                     </Text>
@@ -201,7 +202,18 @@ export default function SignUp() {
                         pressableClassName="mt-4"
                         label="Sign Up"
                         // TODO: Add final validations upon press
-                        onPress={() => console.log('the button is pressed')}
+                        onPress={() => navigation.navigate('Home')}
+                    />
+                    <Text className="mt-4 font-bold text-primary-200">OR</Text>
+                    <Button
+                        type="secondary"
+                        pressableClassName="mt-4"
+                        label="Go to Login"
+                        onPress={() => {
+                            console.log('the button is pressed');
+
+                            navigation.navigate('Login');
+                        }}
                     />
                 </ScrollView>
             </KeyboardAvoidingView>
