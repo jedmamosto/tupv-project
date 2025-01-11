@@ -8,7 +8,7 @@ interface InputFieldProps extends TextInputProps {
     helperText?: string;
     containerClass?: string;
     editable?: boolean;
-    onChangeText: (text: string) => void;
+    onChangeText?: (text: string) => void;
 }
 
 export default function InputField({
@@ -28,7 +28,7 @@ export default function InputField({
     const errorMode = 'outline-danger bg-warning text';
 
     const inputClasses = cn(
-        'w-full h-12 px-4 text-base rounded-lg bg-white',
+        'w-full min-h-12 px-4 text-base rounded-lg bg-white',
         editable
             ? isFocused
                 ? focusMode
@@ -37,7 +37,10 @@ export default function InputField({
         error ? errorMode : ''
     );
 
-    const viewClass = cn('mb-4 w-full gap-1', containerClass);
+    const viewClass = cn(
+        'mb-4 w-full gap-1 flex justify-center',
+        containerClass
+    );
 
     return (
         <View className={viewClass}>

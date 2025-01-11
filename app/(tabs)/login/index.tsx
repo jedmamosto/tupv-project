@@ -1,4 +1,11 @@
-import { View, Text } from 'react-native';
+import {
+    ScrollView,
+    View,
+    Text,
+    SafeAreaView,
+    StatusBar,
+    KeyboardAvoidingView,
+} from 'react-native';
 import { Image } from 'expo-image';
 import InputField from '../../../components/custom/InputField';
 import { useState } from 'react';
@@ -29,61 +36,68 @@ export default function Login() {
         }
     };
     return (
-        <View className="flex h-screen w-screen flex-col items-center justify-center bg-light p-6">
-            {/* TEMPORARY */}
-            <Image
-                source={require('@/assets/images/grubly-logo.png')}
-                contentFit="cover"
-                transition={1000}
-                className="mb-4 h-48 w-48"
-            />
-            <InputField
-                label="Email Address"
-                value={email}
-                onChangeText={(text) => {
-                    setEmail(text);
-                }}
-                placeholder="juandelacruz@email.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                helperText="Enter your registered email"
-            />
-            <InputField
-                label="Password"
-                value={password}
-                onChangeText={(text) => {
-                    setPassword(text);
-                }}
-                placeholder="Your password"
-                keyboardType="default"
-                secureTextEntry={true}
-                autoCapitalize="none"
-                helperText="Enter your registered password"
-            />
-            {error ? (
-                <Text className="mt-1 text-sm text-danger">
-                    Invalid email or password. Please check your credentials and
-                    try again.
-                </Text>
-            ) : null}
-            <Button
-                pressableClassName="mt-4"
-                label="Login"
-                onPress={() => {
-                    console.log('the button is pressed');
-                    validateEmail(email);
-                }}
-            />
-            <Text className="mt-4 font-bold text-primary-200">OR</Text>
-            <Button
-                type="secondary"
-                pressableClassName="mt-4"
-                label="Sign Up"
-                onPress={() => {
-                    console.log('the button is pressed');
-                    validateEmail(email);
-                }}
-            />
-        </View>
+        <SafeAreaView className="flex-1 bg-light">
+            <StatusBar barStyle="default" />
+            <KeyboardAvoidingView className="flex-1 p-6">
+                <ScrollView contentContainerClassName="flex-1 items-center justify-center">
+                    {/* TEMPORARY */}
+                    <View className="p-6">
+                        <Image
+                            source={require('@/assets/images/grubly-logo.png')}
+                            contentFit="fill"
+                            style={{ width: 200, height: 200 }}
+                        />
+                    </View>
+
+                    <InputField
+                        label="Email Address"
+                        value={email}
+                        onChangeText={(text) => {
+                            setEmail(text);
+                        }}
+                        placeholder="juandelacruz@email.com"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        helperText="Enter your registered email"
+                    />
+                    <InputField
+                        label="Password"
+                        value={password}
+                        onChangeText={(text) => {
+                            setPassword(text);
+                        }}
+                        placeholder="Your password"
+                        keyboardType="default"
+                        secureTextEntry={true}
+                        autoCapitalize="none"
+                        helperText="Enter your registered password"
+                    />
+                    {error ? (
+                        <Text className="mt-1 text-sm text-danger">
+                            Invalid email or password. Please check your
+                            credentials and try again.
+                        </Text>
+                    ) : null}
+                    <Button
+                        pressableClassName="mt-4"
+                        label="Login"
+                        onPress={() => {
+                            console.log('the button is pressed');
+                            validateEmail(email);
+                        }}
+                    />
+                    <Text className="mt-4 font-bold text-primary-200">OR</Text>
+                    <Button
+                        type="secondary"
+                        pressableClassName="mt-4"
+                        label="Sign Up"
+                        onPress={() => {
+                            console.log('the button is pressed');
+                            validateEmail(email);
+                        }}
+                    />
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
