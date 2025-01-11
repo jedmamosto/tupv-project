@@ -51,6 +51,7 @@ export default function MenuItemList({
             typeof item.image === "string" ? { uri: item.image } : item.image
           }
           className="w-16 h-16 rounded-full"
+          style={{width: 64, height: 64, borderRadius: 9999}}
           contentFit="cover"
         />
         <View className="flex-1 ml-4">

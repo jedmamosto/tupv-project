@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, ActivityIndicator, Text } from "react-native";
+import { View, ScrollView, ActivityIndicator, Text, StatusBar, SafeAreaView } from "react-native";
 import BottomNav from "../../components/Home/BottomNav";
 import { mockShops } from "../../data/mockData";
 import type { Shop } from "../../types/shop";
 import HomeShopCard from "../../components/Home/HomeShopCard";
 import { HomeScreenProps } from "../../types/navigations";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 function HomeScreen({ navigation }: HomeScreenProps) {
   const [shops, setShops] = useState<Shop[]>([]);
@@ -54,6 +53,7 @@ function HomeScreen({ navigation }: HomeScreenProps) {
 
   return (
     <SafeAreaView className="flex-1 bg-light">
+      <StatusBar barStyle='default'/>
       {currentTab === "home" && (
         <ScrollView className="flex-1 pt-8 px-4 pb-4">
           <Text className="text-2xl font-extrabold italic text-primary mb-6">
