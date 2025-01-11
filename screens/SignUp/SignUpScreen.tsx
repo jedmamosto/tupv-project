@@ -11,8 +11,8 @@ import {
 import InputField from '@/components/custom/InputField';
 import { useState } from 'react';
 import { Button } from '@/components/custom/Button';
-import QRScanner from '@/components/signup/QRScanner';
 import { SignUpScreenProps } from '@/types/navigations';
+import QRPermissions from '@/components/SignUp/QRPermissions';
 
 export default function SignUpScreen({ navigation }: SignUpScreenProps) {
     const [signUpData, setSignUpData] = useState({
@@ -184,7 +184,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
                             animationType="slide"
                             presentationStyle="pageSheet"
                         >
-                            <QRScanner
+                            <QRPermissions
                                 onModalStateChange={handleModalStateChange}
                             />
                         </Modal>

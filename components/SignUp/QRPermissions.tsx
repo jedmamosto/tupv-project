@@ -3,12 +3,16 @@ import { View, Text, Pressable } from 'react-native';
 import { Button } from '../custom/Button';
 import { useCameraPermissions } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { QRScannerScreenNavigationProp } from '@/types/navigations';
 
-interface QRScannerProps {
+interface QRPermissionsProps {
     onModalStateChange: (state: boolean) => void;
 }
 
-const QRScanner = ({ onModalStateChange }: QRScannerProps) => {
+const QRPermissions = ({ onModalStateChange }: QRPermissionsProps) => {
+    const navigation = useNavigation<QRScannerScreenNavigationProp>();
+
     const [permission, requestPermission] = useCameraPermissions();
 
     const isPermissionGranted = Boolean(permission?.granted);
@@ -30,7 +34,11 @@ const QRScanner = ({ onModalStateChange }: QRScannerProps) => {
                 </Pressable>
                 <Pressable
                     disabled={!isPermissionGranted}
-                    onPress={() => console.log('Scan Code button is pressed')}
+                    onPress={() => {
+                        onModalStateChange(false);
+                        console.log(isPermissionGranted);
+                        navigation.navigate('QRScanner');
+                    }}
                 >
                     <Text>Scan Code</Text>
                 </Pressable>
@@ -39,4 +47,4 @@ const QRScanner = ({ onModalStateChange }: QRScannerProps) => {
     );
 };
 
-export default QRScanner;
+export default QRPermissions;
