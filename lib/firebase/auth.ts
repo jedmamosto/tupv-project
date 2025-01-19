@@ -1,8 +1,10 @@
-import { auth } from './config';
+import { setDoc, doc } from 'firebase/firestore';
+import { auth, db } from './config';
 import {
   signInWithEmailAndPassword,
   AuthError,
-  UserCredential
+  UserCredential,
+  createUserWithEmailAndPassword
 } from 'firebase/auth';
 
 // This interface defines the structure of our authentication response
@@ -50,6 +52,64 @@ export async function loginWithEmailPassword(
         break;
       default:
         errorMessage = 'An error occurred during login. Please try again';
+    }
+
+    return {
+      success: false,
+      error: errorMessage
+    };
+  }
+}
+
+interface SignUpData {
+  name: string;
+  email: string;
+  password: string;
+  idNumber: string;
+}
+
+export async function signUpWithEmailPassword(
+  signUpData: SignUpData
+): Promise<AuthResponse> {
+  try {
+    // Create the user account in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      signUpData.email,
+      signUpData.password
+    );
+
+    // After successful authentication, store additional user data in Firestore
+    await setDoc(doc(db, 'users', userCredential.user.uid), {
+      name: signUpData.name,
+      email: signUpData.email,
+      idNumber: signUpData.idNumber,
+      createdAt: new Date().toISOString()
+    });
+
+    return {
+      success: true,
+      user: userCredential
+    };
+  } catch (error) {
+    const authError = error as AuthError;
+    let errorMessage: string;
+
+    switch (authError.code) {
+      case 'auth/email-already-in-use':
+        errorMessage = 'This email is already registered. Please use a different email or login.';
+        break;
+      case 'auth/invalid-email':
+        errorMessage = 'Please enter a valid email address.';
+        break;
+      case 'auth/operation-not-allowed':
+        errorMessage = 'Email/password accounts are not enabled. Please contact support.';
+        break;
+      case 'auth/weak-password':
+        errorMessage = 'Please choose a stronger password.';
+        break;
+      default:
+        errorMessage = 'An error occurred during sign up. Please try again.';
     }
 
     return {

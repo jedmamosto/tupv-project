@@ -5,8 +5,14 @@ export type RootStackParamList = {
   Home: undefined;
   Shop: { shopId: string };
   Login: undefined;
-  SignUp: undefined;
-  QRScanner: undefined;
+  SignUp: {
+    scannedId?: string;
+  } | undefined;
+  QRScanner: QRScannerScreenParams;
+};
+
+export type QRScannerScreenParams = {
+  onScanComplete: (scannedId: string) => void;
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -31,6 +37,7 @@ export type QRScannerScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 export type ShopScreenRouteProp = RouteProp<RootStackParamList, "Shop">;
+export type SignUpScreenRouteProp = RouteProp<RootStackParamList, "SignUp">;
 
 
 export interface HomeScreenProps {
@@ -48,6 +55,7 @@ export interface LoginScreenProps {
 
 export interface SignUpScreenProps {
   navigation: SignUpScreenNavigationProp;
+  route: SignUpScreenRouteProp;
 }
 
 export interface QRScannerScreenProps {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
 import { Button } from '../custom/Button';
 import { useCameraPermissions } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,14 +8,21 @@ import { QRScannerScreenNavigationProp } from '@/types/navigations';
 
 interface QRPermissionsProps {
     onModalStateChange: (state: boolean) => void;
+    onScanComplete: (scannedId: string) => void;
 }
 
-const QRPermissions = ({ onModalStateChange }: QRPermissionsProps) => {
+const QRPermissions = ({
+    onModalStateChange,
+    onScanComplete,
+}: QRPermissionsProps) => {
     const navigation = useNavigation<QRScannerScreenNavigationProp>();
-
     const [permission, requestPermission] = useCameraPermissions();
-
     const isPermissionGranted = Boolean(permission?.granted);
+
+    const handleSuccessfulScan = (scannedData: string) => {
+        onScanComplete(scannedData);
+        onModalStateChange(false);
+    };
 
     return (
         <SafeAreaView className="flex-1">
@@ -24,24 +31,28 @@ const QRPermissions = ({ onModalStateChange }: QRPermissionsProps) => {
                     Scan Your ID QR Code
                 </Text>
                 <Button
-                    pressableClassName=""
-                    type=""
                     label="Go back"
                     onPress={() => onModalStateChange(false)}
+                    type="secondary"
+                    pressableClassName="mb-4"
                 />
-                <Pressable onPress={requestPermission}>
-                    <Text>Request Permissions</Text>
-                </Pressable>
-                <Pressable
-                    disabled={!isPermissionGranted}
-                    onPress={() => {
-                        onModalStateChange(false);
-                        console.log(isPermissionGranted);
-                        navigation.navigate('QRScanner');
-                    }}
-                >
-                    <Text>Scan Code</Text>
-                </Pressable>
+                <Button
+                    label="Request Camera Access"
+                    onPress={requestPermission}
+                    pressableClassName="mb-4"
+                />
+                {isPermissionGranted && (
+                    <Button
+                        label="Scan QR Code"
+                        onPress={() => {
+                            onModalStateChange(false);
+                            navigation.navigate('QRScanner', {
+                                onScanComplete: handleSuccessfulScan,
+                            });
+                        }}
+                        type="primary"
+                    />
+                )}
             </View>
         </SafeAreaView>
     );
