@@ -37,17 +37,26 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     // Track keyboard focus for better scroll handling
     const [isKeyboardFocused, setIsKeyboardFocused] = useState(false);
 
-    // Calculate responsive dimensions
-    const logoSize = isTablet
-        ? Math.min(width * 0.2, 300) // Tablet size (20% of width, max 300)
-        : Math.min(width * 0.4, 200); // Phone size (40% of width, max 200)
+    // We'll adjust the content padding when keyboard is focused
+    const getContentPadding = () => {
+        if (isKeyboardFocused) {
+            // When keyboard is open, reduce top padding to show more content
+            return isTablet ? 'pt-4' : 'pt-2';
+        }
+        // Normal padding when keyboard is closed
+        return isTablet ? 'justify-center' : 'pt-12';
+    };
 
-    // Container width for form elements
-    const containerWidth = isTablet
-        ? Math.min(width * 0.6, 600) // Tablet size (60% of width, max 600)
-        : '100%'; // Phone size (full width)
+    // We'll adjust logo visibility based on keyboard focus
+    const getLogoStyle = () => {
+        if (isKeyboardFocused && !isTablet) {
+            // Hide logo on phones when keyboard is open to save space
+            return 'hidden';
+        }
+        // Show logo with appropriate spacing otherwise
+        return `mb-8 ${isTablet ? 'mb-12' : ''} items-center justify-center`;
+    };
 
-    // Handle input focus events
     const handleInputFocus = useCallback(
         (event: NativeSyntheticEvent<TextInputFocusEventData>) => {
             setIsKeyboardFocused(true);
@@ -58,6 +67,16 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     const handleInputBlur = useCallback(() => {
         setIsKeyboardFocused(false);
     }, []);
+
+    // Calculate responsive dimensions
+    const logoSize = isTablet
+        ? Math.min(width * 0.2, 300) // Tablet size (20% of width, max 300)
+        : Math.min(width * 0.4, 200); // Phone size (40% of width, max 200)
+
+    // Container width for form elements
+    const containerWidth = isTablet
+        ? Math.min(width * 0.6, 600) // Tablet size (60% of width, max 600)
+        : '100%'; // Phone size (full width)
 
     // Email validation with improved UX
     const validateEmail = (text: string): boolean => {
@@ -142,29 +161,40 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             >
                 <ScrollView
                     contentContainerClassName={`min-h-screen flex-1 items-center 
-                        ${isTablet ? 'justify-center' : 'justify-start pt-12'}`}
+                        ${getContentPadding()}`}
                     keyboardShouldPersistTaps="handled"
                     keyboardDismissMode="on-drag"
                 >
                     {/* Main container with responsive width */}
-                    <View style={{ width: containerWidth }} className="px-6">
-                        {/* Logo container with dynamic sizing */}
-                        <View
-                            className={`mb-8 ${isTablet ? 'mb-12' : ''} items-center justify-center`}
-                        >
+                    <View
+                        style={{
+                            width: isTablet
+                                ? Math.min(width * 0.6, 600)
+                                : '100%',
+                        }}
+                        className="px-6"
+                    >
+                        {/* Logo container with dynamic visibility */}
+                        <View className={getLogoStyle()}>
                             <Image
                                 source={require('@/assets/images/grubly-logo.png')}
                                 contentFit="contain"
                                 style={{
-                                    width: logoSize,
-                                    height: logoSize,
+                                    width: isTablet
+                                        ? Math.min(width * 0.2, 300)
+                                        : Math.min(width * 0.4, 200),
+                                    height: isTablet
+                                        ? Math.min(width * 0.2, 300)
+                                        : Math.min(width * 0.4, 200),
                                 }}
-                                transition={200} // Smooth size transitions
+                                transition={200}
                             />
                         </View>
 
-                        {/* Form container */}
-                        <View className={`w-full ${isTablet ? 'px-8' : ''}`}>
+                        {/* Form container with adjusted spacing when keyboard is open */}
+                        <View
+                            className={`w-full ${isTablet ? 'px-8' : ''} ${isKeyboardFocused && !isTablet ? 'space-y-2' : 'space-y-4'}`}
+                        >
                             <InputField
                                 label="Email Address"
                                 value={email}
@@ -177,7 +207,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                                 editable={!isLoading}
                                 onFocus={handleInputFocus}
                                 onBlur={handleInputBlur}
-                                containerClass={isTablet ? 'mb-6' : ''}
+                                containerClass={`${isTablet ? 'mb-6' : ''} 
+                                    ${isKeyboardFocused && !isTablet ? 'mb-1' : ''}`}
                             />
 
                             <InputField
@@ -193,33 +224,47 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                                 editable={!isLoading}
                                 onFocus={handleInputFocus}
                                 onBlur={handleInputBlur}
-                                containerClass={isTablet ? 'mb-6' : ''}
+                                containerClass={`${isTablet ? 'mb-6' : ''} 
+                                    ${isKeyboardFocused && !isTablet ? 'mb-1' : ''}`}
                             />
 
+                            {/* Conditionally render error message with adjusted spacing */}
                             {generalError ? (
-                                <Text className="mb-4 mt-1 text-center text-sm text-danger">
+                                <Text
+                                    className={`text-center text-sm text-danger ${isKeyboardFocused && !isTablet ? 'my-1' : 'my-4'}`}
+                                >
                                     {generalError}
                                 </Text>
                             ) : null}
 
                             <Button
-                                pressableClassName={`mt-4 
+                                pressableClassName={`
+                                    ${isKeyboardFocused && !isTablet ? 'mt-2' : 'mt-4'}
                                     ${isTablet ? 'py-5' : ''}`}
                                 label={isLoading ? 'Please wait...' : 'Login'}
                                 onPress={handleLogin}
                                 type={isLoading ? 'secondary' : 'primary'}
                             />
 
-                            <Text className="mb-4 mt-6 text-center font-bold text-primary-200">
-                                OR
-                            </Text>
+                            {/* Only show divider and signup when keyboard is not focused on phones */}
+                            {(!isKeyboardFocused || isTablet) && (
+                                <>
+                                    <Text className="mb-4 mt-6 text-center font-bold text-primary-200">
+                                        OR
+                                    </Text>
 
-                            <Button
-                                type="secondary"
-                                pressableClassName={isTablet ? 'py-5' : ''}
-                                label="Sign Up"
-                                onPress={() => navigation.navigate('SignUp')}
-                            />
+                                    <Button
+                                        type="secondary"
+                                        pressableClassName={
+                                            isTablet ? 'py-5' : ''
+                                        }
+                                        label="Sign Up"
+                                        onPress={() =>
+                                            navigation.navigate('SignUp')
+                                        }
+                                    />
+                                </>
+                            )}
                         </View>
                     </View>
                 </ScrollView>
