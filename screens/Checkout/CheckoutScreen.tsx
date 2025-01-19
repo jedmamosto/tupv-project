@@ -31,208 +31,125 @@ function CheckoutScreen({ navigation }: CheckoutScreenProps) {
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
 
-  useEffect(function () {
+  useEffect(() => {
     fetchOrderItems();
   }, []);
 
   function fetchOrderItems() {
-    setTimeout(function () {
+    setTimeout(() => {
       setOrderItems(mockOrderItems);
       setLoading(false);
     }, 1000);
-  }
+  };
 
-  function calculateTotal() {
-    return orderItems.reduce(function (sum, item) {
-      return sum + item.price * (item.quantity || 0);
-    }, 0);
-  }
+  const calculateTotal = () =>
+    orderItems.reduce((sum, item) => sum + item.price * (item.quantity || 0), 0);
 
   function handlePaymentSelection(paymentId: string) {
     setSelectedPayment(paymentId);
-  }
+  };
 
-  function handlePlaceOrder() {
+ function handlePlaceOrder() {
     if (!selectedPayment) return;
     setPlacingOrder(true);
-    setTimeout(function () {
+    setTimeout(() => {
       setPlacingOrder(false);
       navigation.navigate("Home");
     }, 2000);
-  }
+  };
 
   if (loading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#f8f9fa",
-        }}
-      >
+      <View className="flex-1 justify-center items-center bg-gray-100">
         <ActivityIndicator size="large" color="#3d5300" />
-        <Text style={{ marginTop: 16, color: "#3d5300" }}>
-          Loading checkout...
-        </Text>
+        <Text className="mt-4 text-green-800">Loading checkout...</Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
-      <View
-        style={{
-          backgroundColor: "#3d5300",
-          paddingTop: 48,
-          paddingBottom: 16,
-          paddingHorizontal: 16,
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ marginRight: 16 }}
-        >
+    <SafeAreaView className="flex-1 bg-gray-100">
+      <View className="bg-green-800 pt-12 pb-4 px-4 flex-row items-center">
+        <TouchableOpacity onPress={() => navigation.goBack()} className="mr-4">
           <ArrowLeft stroke="#fff" width={24} height={24} />
         </TouchableOpacity>
-        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
-          Checkout
-        </Text>
+        <Text className="text-white text-lg font-bold">Checkout</Text>
       </View>
 
-      <ScrollView style={{ flex: 1 }}>
-        <View
-          style={{
-            padding: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: "#e0e0e0",
-          }}
-        >
-          <Text style={{ fontSize: 20, fontWeight: "bold", color: "#3d5300" }}>
-            Nenang's Eatery
-          </Text>
+      <ScrollView className="flex-1">
+        <View className="p-4 border-b border-gray-300">
+          <Text className="text-xl font-bold text-green-800">Nenang's Eatery</Text>
         </View>
 
-        <View style={{ padding: 16, backgroundColor: "#f0f0f0" }}>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "bold",
-              color: "#3d5300",
-              marginBottom: 8,
-            }}
-          >
+        <View className="p-4 bg-gray-200">
+          <Text className="text-lg font-bold text-green-800 mb-2">
             Order Summary
           </Text>
-          {orderItems.map(function (item) {
-            return (
-              <View
-                key={item.id}
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  marginBottom: 8,
-                }}
-              >
-                <Text style={{ fontSize: 16, color: "#3d5300" }}>
-                  {item.quantity} × {item.name}
-                </Text>
-                <Text style={{ fontSize: 16, color: "#3d5300" }}>
-                  ₱{(item.price * (item.quantity || 0)).toFixed(2)}
-                </Text>
-              </View>
-            );
-          })}
-          <View
-            style={{
-              marginTop: 16,
-              paddingTop: 16,
-              borderTopWidth: 1,
-              borderTopColor: "#d0d0d0",
-            }}
-          >
+          {orderItems.map((item) => (
             <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
+              key={item.id}
+              className="flex-row justify-between mb-2"
             >
-              <Text
-                style={{ fontSize: 18, fontWeight: "bold", color: "#3d5300" }}
-              >
-                TOTAL
+              <Text className="text-base text-green-800">
+                {item.quantity} × {item.name}
               </Text>
-              <Text
-                style={{ fontSize: 18, fontWeight: "bold", color: "#3d5300" }}
-              >
+              <Text className="text-base text-green-800">
+                ₱{(item.price * (item.quantity || 0)).toFixed(2)}
+              </Text>
+            </View>
+          ))}
+          <View className="mt-4 pt-4 border-t border-gray-400">
+            <View className="flex-row justify-between">
+              <Text className="text-lg font-bold text-green-800">TOTAL</Text>
+              <Text className="text-lg font-bold text-green-800">
                 ₱{calculateTotal().toFixed(2)}
               </Text>
             </View>
           </View>
         </View>
 
-        <View style={{ padding: 16 }}>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "bold",
-              color: "#3d5300",
-              marginBottom: 8,
-            }}
-          >
+        <View className="p-4">
+          <Text className="text-lg font-bold text-green-800 mb-2">
             Payment Method
           </Text>
-          {mockPaymentMethods.map(function (method) {
-            return (
-              <TouchableOpacity
-                key={method.id}
-                onPress={() => handlePaymentSelection(method.id)}
-                style={{
-                  padding: 16,
-                  borderRadius: 8,
-                  borderWidth: 2,
-                  borderColor:
-                    selectedPayment === method.id ? "#3d5300" : "#e0e0e0",
-                  backgroundColor:
-                    selectedPayment === method.id ? "#f0f8ff" : "transparent",
-                  marginBottom: 8,
-                }}
+          {mockPaymentMethods.map((method) => (
+            <TouchableOpacity
+              key={method.id}
+              onPress={() => handlePaymentSelection(method.id)}
+              className={`p-4 rounded-lg border-2 mb-2 ${
+                selectedPayment === method.id
+                  ? "border-green-800 bg-blue-50"
+                  : "border-gray-300"
+              }`}
+            >
+              <Text
+                className={`text-base ${
+                  selectedPayment === method.id
+                    ? "text-green-800 font-bold"
+                    : "text-gray-600"
+                }`}
               >
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: selectedPayment === method.id ? "#3d5300" : "#666",
-                    fontWeight:
-                      selectedPayment === method.id ? "bold" : "normal",
-                  }}
-                >
-                  {method.name}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+                {method.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </ScrollView>
 
-      <View
-        style={{ padding: 16, borderTopWidth: 1, borderTopColor: "#e0e0e0" }}
-      >
+      <View className="p-4 border-t border-gray-300">
         <TouchableOpacity
           onPress={handlePlaceOrder}
           disabled={!selectedPayment || placingOrder}
-          style={{
-            backgroundColor:
-              selectedPayment && !placingOrder ? "#3d5300" : "#a0a0a0",
-            padding: 16,
-            borderRadius: 8,
-            alignItems: "center",
-          }}
+          className={`p-4 rounded-lg items-center ${
+            selectedPayment && !placingOrder
+              ? "bg-green-800"
+              : "bg-gray-400"
+          }`}
         >
           {placingOrder ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
-              Place Order
-            </Text>
+            <Text className="text-white text-lg font-bold">Place Order</Text>
           )}
         </TouchableOpacity>
       </View>
