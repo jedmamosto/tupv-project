@@ -25,6 +25,10 @@ function HomeScreen({ navigation }: HomeScreenProps) {
         function fetchShops() {
             try {
                 setTimeout(function () {
+                    console.log(
+                        'Test logging envs:',
+                        process.env.EXPO_PUBLIC_FIREBASE_API_KEY
+                    );
                     setShops(mockShops);
                     setLoading(false);
                 }, 1500);
