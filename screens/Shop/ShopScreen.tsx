@@ -19,28 +19,37 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const { shopId } = route.params;
 
-  useEffect(() => {
-    console.log("Fetching shop for shopId:", shopId);
-    const foundShop = mockShops.find((s) => s.id === shopId);
-    console.log("Found Shop:", foundShop);
-    if (foundShop) {
-      setShop(foundShop);
-      setMenuItems(
-        foundShop.menuItems.map((item) => ({ ...item, quantity: 0 }))
-      );
-    }
-    setLoading(false);
-  }, [shopId]);
+  useEffect(
+    function () {
+      console.log("Fetching shop for shopId:", shopId);
+      const foundShop = mockShops.find((s) => s.id === shopId);
+      console.log("Found Shop:", foundShop);
+      if (foundShop) {
+        setShop(foundShop);
+        setMenuItems(
+          foundShop.menuItems.map((item) => ({ ...item, quantity: 0 }))
+        );
+      }
+      setLoading(false);
+    },
+    [shopId]
+  );
 
   function handleUpdateQuantity(itemId: string, quantity: number) {
     if (quantity < 0) return;
-    setMenuItems((prev) =>
-      prev.map((item) => (item.id === itemId ? { ...item, quantity } : item))
-    );
+    setMenuItems(function (prev) {
+      return prev.map((item) =>
+        item.id === itemId ? { ...item, quantity } : item
+      );
+    });
   }
 
   function handleAddToCart(item: MenuItem) {
     console.log("Adding to cart:", item);
+  }
+
+  function handleCheckout() {
+    navigation.navigate("Checkout");
   }
 
   if (loading) {
@@ -110,6 +119,20 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
           />
         ))}
       </ScrollView>
+
+      <TouchableOpacity
+        onPress={handleCheckout}
+        style={{
+          backgroundColor: "#3d5300",
+          padding: 16,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+          Checkout
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
