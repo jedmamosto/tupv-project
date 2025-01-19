@@ -54,62 +54,34 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
 
   if (loading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#f8f9fa",
-        }}
-      >
+      <View className="flex-1 justify-center items-center bg-light">
         <StatusBar barStyle="light-content" backgroundColor="#3d5300" />
         <ActivityIndicator size="large" color="#3d5300" />
-        <Text style={{ marginTop: 16, color: "#3d5300" }}>Loading menu...</Text>
+        <Text className="mt-4 text-primary">Loading menu...</Text>
       </View>
     );
   }
 
   if (!shop) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#f8f9fa",
-        }}
-      >
+      <View className="flex-1 justify-center items-center bg-light">
         <StatusBar barStyle="light-content" backgroundColor="#3d5300" />
-        <Text style={{ color: "red" }}>Shop not found</Text>
+        <Text className="text-red-500">Shop not found</Text>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
+    <View className="flex-1 bg-light">
       <StatusBar barStyle="light-content" backgroundColor="#3d5300" />
-      <View
-        style={{
-          backgroundColor: "#3d5300",
-          paddingTop: 48,
-          paddingBottom: 16,
-          paddingHorizontal: 16,
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ marginRight: 16 }}
-        >
+      <View className="bg-primary pt-12 pb-4 px-4 flex-row items-center">
+        <TouchableOpacity onPress={() => navigation.goBack()} className="mr-4">
           <ArrowLeft stroke="#fff" width={24} height={24} />
         </TouchableOpacity>
-        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
-          {shop.name}
-        </Text>
+        <Text className="text-white text-lg font-bold">{shop.name}</Text>
       </View>
 
-      <ScrollView style={{ flex: 1, padding: 16 }}>
+      <ScrollView className="flex-1 p-4">
         {menuItems.map((item) => (
           <MenuItemList
             key={item.id}
