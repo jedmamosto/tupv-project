@@ -1,160 +1,149 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  ActivityIndicator,
-} from "react-native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../types/navigations";
-import { ArrowLeft } from "react-native-feather";
-import {
-  mockOrderItems,
-  mockPaymentMethods,
-} from "../../data/checkoutMockData";
-import { MenuItem } from "../../types/shop";
+    View,
+    Text,
+    TouchableOpacity,
+    ScrollView,
+    SafeAreaView,
+    ActivityIndicator,
+    Alert,
+} from 'react-native';
+import { ArrowLeft } from 'react-native-feather';
+import type { CheckoutScreenProps } from '../../types/navigations';
+import type { CartItem } from '../../types/shop';
 
-type CheckoutScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Checkout"
->;
+function CheckoutScreen({ route, navigation }: CheckoutScreenProps) {
+    const [loading, setLoading] = useState(false);
+    const { cartItems } = route.params;
+    const [selectedPayment, setSelectedPayment] = useState<
+        'counter' | 'online' | null
+    >(null);
 
-interface CheckoutScreenProps {
-  navigation: CheckoutScreenNavigationProp;
-}
+    function calculateTotal() {
+        return cartItems.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+        );
+    }
 
-function CheckoutScreen({ navigation }: CheckoutScreenProps) {
-  const [orderItems, setOrderItems] = useState<MenuItem[]>([]);
-  const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [placingOrder, setPlacingOrder] = useState(false);
+    function handlePlaceOrder() {
+        if (!selectedPayment) {
+            Alert.alert(
+                'Payment Method Required',
+                'Please select a payment method.'
+            );
+            return;
+        }
 
-  useEffect(() => {
-    fetchOrderItems();
-  }, []);
+        setLoading(true);
+        setTimeout(() => {
+            setLoading(false);
+            if (selectedPayment === 'counter') {
+                navigation.navigate('OrderConfirmation', { orderId: '123456' }); // Replace with actual order ID
+            } else {
+                navigation.navigate('PaymentGateway', {
+                    amount: calculateTotal(),
+                    orderId: '123456',
+                }); // Replace with actual order ID
+            }
+        }, 2000);
+    }
 
-  function fetchOrderItems() {
-    setTimeout(() => {
-      setOrderItems(mockOrderItems);
-      setLoading(false);
-    }, 1000);
-  };
+    function handleGoBack() {
+        navigation.goBack();
+    }
 
-  const calculateTotal = () =>
-    orderItems.reduce((sum, item) => sum + item.price * (item.quantity || 0), 0);
-
-  function handlePaymentSelection(paymentId: string) {
-    setSelectedPayment(paymentId);
-  };
-
- function handlePlaceOrder() {
-    if (!selectedPayment) return;
-    setPlacingOrder(true);
-    setTimeout(() => {
-      setPlacingOrder(false);
-      navigation.navigate("Home");
-    }, 2000);
-  };
-
-  if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-100">
-        <ActivityIndicator size="large" color="#3d5300" />
-        <Text className="mt-4 text-green-800">Loading checkout...</Text>
-      </View>
+        <SafeAreaView className="flex-1 bg-gray-100">
+            <View className="flex-row items-center bg-green-800 px-4 pb-4 pt-12">
+                <TouchableOpacity onPress={handleGoBack} className="mr-4">
+                    <ArrowLeft stroke="#fff" width={24} height={24} />
+                </TouchableOpacity>
+                <Text className="text-lg font-bold text-white">Checkout</Text>
+            </View>
+
+            <ScrollView className="flex-1 p-4">
+                <View className="mb-4 rounded-lg bg-white p-4 shadow">
+                    <Text className="mb-2 text-xl font-bold text-green-800">
+                        Order Summary
+                    </Text>
+                    {cartItems.map((item: CartItem) => (
+                        <View
+                            key={item.id}
+                            className="mb-2 flex-row justify-between"
+                        >
+                            <Text className="text-base text-gray-800">
+                                {item.quantity} x {item.name}
+                            </Text>
+                            <Text className="text-base text-gray-800">
+                                ₱{(item.price * item.quantity).toFixed(2)}
+                            </Text>
+                        </View>
+                    ))}
+                    <View className="mt-4 border-t border-gray-200 pt-4">
+                        <View className="flex-row justify-between">
+                            <Text className="text-lg font-bold text-green-800">
+                                Total
+                            </Text>
+                            <Text className="text-lg font-bold text-green-800">
+                                ₱{calculateTotal().toFixed(2)}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+
+                <View className="mb-4 rounded-lg bg-white p-4 shadow">
+                    <Text className="mb-2 text-xl font-bold text-green-800">
+                        Payment Method
+                    </Text>
+                    <TouchableOpacity
+                        onPress={() => setSelectedPayment('counter')}
+                        className={`mb-2 rounded-lg border-2 p-4 ${
+                            selectedPayment === 'counter'
+                                ? 'border-green-800 bg-green-100'
+                                : 'border-gray-300'
+                        }`}
+                    >
+                        <Text
+                            className={`text-base ${selectedPayment === 'counter' ? 'font-bold text-green-800' : 'text-gray-800'}`}
+                        >
+                            Pay at the counter
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setSelectedPayment('online')}
+                        className={`rounded-lg border-2 p-4 ${
+                            selectedPayment === 'online'
+                                ? 'border-green-800 bg-green-100'
+                                : 'border-gray-300'
+                        }`}
+                    >
+                        <Text
+                            className={`text-base ${selectedPayment === 'online' ? 'font-bold text-green-800' : 'text-gray-800'}`}
+                        >
+                            Pay online
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+
+            <View className="border-t border-gray-200 bg-white p-4">
+                <TouchableOpacity
+                    onPress={handlePlaceOrder}
+                    disabled={loading}
+                    className={`${loading ? 'bg-gray-400' : 'bg-green-800'} items-center rounded-lg p-4`}
+                >
+                    {loading ? (
+                        <ActivityIndicator color="#ffffff" />
+                    ) : (
+                        <Text className="text-lg font-bold text-white">
+                            Place Order
+                        </Text>
+                    )}
+                </TouchableOpacity>
+            </View>
+        </SafeAreaView>
     );
-  }
-
-  return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <View className="bg-green-800 pt-12 pb-4 px-4 flex-row items-center">
-        <TouchableOpacity onPress={() => navigation.goBack()} className="mr-4">
-          <ArrowLeft stroke="#fff" width={24} height={24} />
-        </TouchableOpacity>
-        <Text className="text-white text-lg font-bold">Checkout</Text>
-      </View>
-
-      <ScrollView className="flex-1">
-        <View className="p-4 border-b border-gray-300">
-          <Text className="text-xl font-bold text-green-800">Nenang's Eatery</Text>
-        </View>
-
-        <View className="p-4 bg-gray-200">
-          <Text className="text-lg font-bold text-green-800 mb-2">
-            Order Summary
-          </Text>
-          {orderItems.map((item) => (
-            <View
-              key={item.id}
-              className="flex-row justify-between mb-2"
-            >
-              <Text className="text-base text-green-800">
-                {item.quantity} × {item.name}
-              </Text>
-              <Text className="text-base text-green-800">
-                ₱{(item.price * (item.quantity || 0)).toFixed(2)}
-              </Text>
-            </View>
-          ))}
-          <View className="mt-4 pt-4 border-t border-gray-400">
-            <View className="flex-row justify-between">
-              <Text className="text-lg font-bold text-green-800">TOTAL</Text>
-              <Text className="text-lg font-bold text-green-800">
-                ₱{calculateTotal().toFixed(2)}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="p-4">
-          <Text className="text-lg font-bold text-green-800 mb-2">
-            Payment Method
-          </Text>
-          {mockPaymentMethods.map((method) => (
-            <TouchableOpacity
-              key={method.id}
-              onPress={() => handlePaymentSelection(method.id)}
-              className={`p-4 rounded-lg border-2 mb-2 ${
-                selectedPayment === method.id
-                  ? "border-green-800 bg-blue-50"
-                  : "border-gray-300"
-              }`}
-            >
-              <Text
-                className={`text-base ${
-                  selectedPayment === method.id
-                    ? "text-green-800 font-bold"
-                    : "text-gray-600"
-                }`}
-              >
-                {method.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-
-      <View className="p-4 border-t border-gray-300">
-        <TouchableOpacity
-          onPress={handlePlaceOrder}
-          disabled={!selectedPayment || placingOrder}
-          className={`p-4 rounded-lg items-center ${
-            selectedPayment && !placingOrder
-              ? "bg-green-800"
-              : "bg-gray-400"
-          }`}
-        >
-          {placingOrder ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-white text-lg font-bold">Place Order</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
 }
 
 export default CheckoutScreen;
