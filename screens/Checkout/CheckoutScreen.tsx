@@ -7,6 +7,7 @@ import {
     SafeAreaView,
     ActivityIndicator,
     Alert,
+    StatusBar,
 } from 'react-native';
 import { ArrowLeft } from 'react-native-feather';
 import type { CheckoutScreenProps } from '../../types/navigations';
@@ -39,12 +40,12 @@ function CheckoutScreen({ route, navigation }: CheckoutScreenProps) {
         setTimeout(() => {
             setLoading(false);
             if (selectedPayment === 'counter') {
-                navigation.navigate('OrderConfirmation', { orderId: '123456' }); // Replace with actual order ID
+                navigation.navigate('OrderConfirmation', { orderId: '123456' });
             } else {
                 navigation.navigate('PaymentGateway', {
                     amount: calculateTotal(),
                     orderId: '123456',
-                }); // Replace with actual order ID
+                });
             }
         }, 2000);
     }
@@ -55,6 +56,7 @@ function CheckoutScreen({ route, navigation }: CheckoutScreenProps) {
 
     return (
         <SafeAreaView className="flex-1 bg-gray-100">
+            <StatusBar barStyle="default" />
             <View className="flex-row items-center bg-green-800 px-4 pb-4 pt-12">
                 <TouchableOpacity onPress={handleGoBack} className="mr-4">
                     <ArrowLeft stroke="#fff" width={24} height={24} />

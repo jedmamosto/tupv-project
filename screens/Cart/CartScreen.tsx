@@ -7,6 +7,7 @@ import {
     SafeAreaView,
     ActivityIndicator,
     Alert,
+    StatusBar,
 } from 'react-native';
 import { ArrowLeft, Minus, Plus, Trash2 } from 'react-native-feather';
 import type { CartScreenProps } from '../../types/navigations';
@@ -66,6 +67,7 @@ function CartScreen({ route, navigation }: CartScreenProps) {
 
     return (
         <SafeAreaView className="flex-1 bg-gray-100">
+            <StatusBar barStyle="default" />
             <View className="flex-row items-center bg-green-800 px-4 pb-4 pt-12">
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}

@@ -12,6 +12,7 @@ import { Image } from 'expo-image';
 import type { ShopScreenProps } from '../../types/navigations';
 import type { Shop, MenuItem, ProductCategory } from '../../types/shop';
 import { mockShops } from '../../data/mockData';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function ShopScreen({ route, navigation }: ShopScreenProps) {
     const [shop, setShop] = useState<Shop | null>(null);
@@ -83,8 +84,8 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
     }
 
     return (
-        <View className="flex-1 bg-gray-100">
-            <StatusBar barStyle="light-content" backgroundColor="#3d5300" />
+        <SafeAreaView className="flex-1 bg-gray-100">
+            <StatusBar barStyle="default" />
             <View className="flex-row items-center justify-between bg-green-800 px-4 pb-4 pt-12">
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
@@ -175,7 +176,7 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
                         ))}
                 </View>
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 }
 
