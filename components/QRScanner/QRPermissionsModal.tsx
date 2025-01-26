@@ -40,11 +40,13 @@ const QRPermissionsModal = ({
                     type="secondary"
                     pressableClassName="mb-4"
                 />
-                <Button
-                    label="Request Camera Access"
-                    onPress={requestPermission}
-                    pressableClassName="mb-4"
-                />
+                {!isPermissionGranted && (
+                    <Button
+                        label="Request Camera Access"
+                        onPress={requestPermission}
+                        pressableClassName="mb-4"
+                    />
+                )}
                 {isPermissionGranted && (
                     <Button
                         label="Scan QR Code"
