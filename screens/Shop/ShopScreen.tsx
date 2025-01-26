@@ -6,6 +6,7 @@ import {
     ActivityIndicator,
     StatusBar,
     TouchableOpacity,
+    SafeAreaView,
 } from 'react-native';
 import { ShoppingCart, ArrowLeft } from 'react-native-feather';
 import { Image } from 'expo-image';
@@ -83,7 +84,7 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
     }
 
     return (
-        <View className="flex-1 bg-gray-100">
+        <SafeAreaView className="flex-1 bg-gray-100">
             <StatusBar barStyle="default" />
             <View className="flex-row items-center justify-between bg-green-800 px-4 pb-4 pt-12">
                 <TouchableOpacity
@@ -175,7 +176,7 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
                         ))}
                 </View>
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 }
 
