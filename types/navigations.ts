@@ -1,6 +1,6 @@
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
-import { type CartItem } from './shop';
+import type { CartItem } from './shop';
 
 export type RootStackParamList = {
     Home: undefined;
@@ -14,6 +14,10 @@ export type RootStackParamList = {
     UserProfile: { userId: string };
     OrderHistory: undefined;
     PaymentGateway: { amount: number; orderId: string };
+    VendorDashboard: undefined;
+    ManageInventory: undefined;
+    ManageOrders: undefined;
+    ScanQR: undefined;
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -59,6 +63,22 @@ export type OrderHistoryScreenNavigationProp = NativeStackNavigationProp<
 export type PaymentGatewayScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
     'PaymentGateway'
+>;
+export type VendorDashboardScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'VendorDashboard'
+>;
+export type ManageInventoryScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'ManageInventory'
+>;
+export type ManageOrdersScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'ManageOrders'
+>;
+export type ScanQRScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'ScanQR'
 >;
 
 export type ShopScreenRouteProp = RouteProp<RootStackParamList, 'Shop'>;
@@ -125,4 +145,20 @@ export interface OrderHistoryScreenProps {
 export interface PaymentGatewayScreenProps {
     navigation: PaymentGatewayScreenNavigationProp;
     route: PaymentGatewayScreenRouteProp;
+}
+
+export interface VendorDashboardScreenProps {
+    navigation: VendorDashboardScreenNavigationProp;
+}
+
+export interface ManageInventoryScreenProps {
+    navigation: ManageInventoryScreenNavigationProp;
+}
+
+export interface ManageOrdersScreenProps {
+    navigation: ManageOrdersScreenNavigationProp;
+}
+
+export interface ScanQRScreenProps {
+    navigation: ScanQRScreenNavigationProp;
 }

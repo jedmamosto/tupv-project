@@ -149,11 +149,15 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
                             >
                                 <Image
                                     source={item.image}
-                                    style={{ width: 80, height: 80 }}
+                                    style={{
+                                        width: 80,
+                                        height: 80,
+                                        borderRadius: 8,
+                                    }}
                                     className="mr-4 rounded-lg"
                                     contentFit="cover"
                                 />
-                                <View className="flex-1">
+                                <View className="ml-2 flex-1">
                                     <Text className="text-lg font-semibold text-green-800">
                                         {item.name}
                                     </Text>
