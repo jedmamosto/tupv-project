@@ -13,7 +13,7 @@ import InputField from '@/components/custom/InputField';
 import { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/custom/Button';
 import { SignUpScreenProps } from '@/types/navigations';
-import QRPermissions from '@/components/SignUp/QRPermissions';
+import QRPermissions from '@/components/QRScanner/QRPermissionsModal';
 import { signUpWithEmailPassword } from '@/lib/firebase/auth';
 
 export default function SignUpScreen({ navigation, route }: SignUpScreenProps) {
@@ -97,8 +97,18 @@ export default function SignUpScreen({ navigation, route }: SignUpScreenProps) {
     };
 
     const verifyIdMatch = (): boolean => {
-        if (!signUpData.idNumber || !signUpData.scannedIdNumber) {
-            setIdNumberError('Both manual ID and scanned ID are required');
+        if (!signUpData.idNumber && !signUpData.scannedIdNumber) {
+            setIdNumberError('Please enter and scan your ID number');
+            return false;
+        }
+
+        if (!signUpData.idNumber) {
+            setIdNumberError('Please enter your ID number manually');
+            return false;
+        }
+
+        if (!signUpData.scannedIdNumber) {
+            setIdNumberError('Please scan your ID QR code');
             return false;
         }
 
@@ -107,6 +117,7 @@ export default function SignUpScreen({ navigation, route }: SignUpScreenProps) {
             return false;
         }
 
+        setIdNumberError('');
         return true;
     };
 
@@ -134,7 +145,9 @@ export default function SignUpScreen({ navigation, route }: SignUpScreenProps) {
             ...prev,
             scannedIdNumber: scannedId,
         }));
-        verifyIdMatch();
+        setTimeout(() => {
+            verifyIdMatch();
+        }, 300);
     };
 
     const handleSignUp = async () => {
@@ -184,7 +197,7 @@ export default function SignUpScreen({ navigation, route }: SignUpScreenProps) {
             />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                className="flex-1"
+                className="h-full flex-1"
                 keyboardVerticalOffset={
                     Platform.OS === 'ios' ? (isTablet ? 40 : 20) : 0
                 }

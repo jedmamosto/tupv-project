@@ -4,33 +4,37 @@ import {
     Text,
     SafeAreaView,
     View,
-    Dimensions,
     useWindowDimensions,
 } from 'react-native';
 import { Button } from '@/components/custom/Button';
-import { QRScannerScreenNavigationProp } from '@/types/navigations';
+import { useState } from 'react';
 
-interface QRScannerScreenProps {
-    route: {
-        params: {
-            onScanComplete: (scannedId: string) => void;
-        };
-    };
-    navigation: QRScannerScreenNavigationProp;
+interface QRScannerModalProps {
+    onScanComplete: (scannedId: string) => void;
+    onScannerModalStateChange: (state: boolean) => void;
 }
 
-const QRScannerScreen = ({ route, navigation }: QRScannerScreenProps) => {
+const QRScannerModal = ({
+    onScanComplete,
+    onScannerModalStateChange,
+}: QRScannerModalProps) => {
     const [permission, requestPermission] = useCameraPermissions();
     const { width, height } = useWindowDimensions();
+    const [error, setError] = useState('');
 
     // Function to handle successful QR scan
     const handleQRScanned = ({ data }: { data: string }) => {
         const idPattern = /^TUPV-[0-9]{2}-[0-9]{4}$/;
-        if (idPattern.test(data.toUpperCase())) {
-            navigation.navigate('SignUp', { scannedId: data.toUpperCase() });
+        const formattedData = data.toUpperCase();
+        if (idPattern.test(formattedData)) {
+            setTimeout(() => {
+                onScanComplete(formattedData);
+            }, 1000);
         } else {
-            // You might want to add error feedback here
-            console.log('Invalid QR code format', data);
+            setError('Invalid QR code format. Please try again.');
+            setTimeout(() => {
+                setError('');
+            }, 3000);
         }
     };
 
@@ -116,14 +120,21 @@ const QRScannerScreen = ({ route, navigation }: QRScannerScreenProps) => {
                 <View className="absolute bottom-8 w-full items-center">
                     <Button
                         label="Cancel"
-                        onPress={() => navigation.goBack()}
+                        onPress={() => onScannerModalStateChange(false)}
                         type="secondary" // Using the custom Button type prop
                         pressableClassName="bg-white/20"
                     />
                 </View>
             </View>
+            <View className="absolute top-8 w-full items-center">
+                {error && (
+                    <Text className="rounded-lg bg-red-500/80 px-4 py-2 text-white">
+                        {error}
+                    </Text>
+                )}
+            </View>
         </SafeAreaView>
     );
 };
 
-export default QRScannerScreen;
+export default QRScannerModal;

@@ -5,7 +5,6 @@ import ShopScreen from '../screens/Shop/ShopScreen';
 import { RootStackParamList } from '../types/navigations';
 import LoginScreen from '@/screens/Login/LoginScreen';
 import SignUpScreen from '@/screens/SignUp/SignUpScreen';
-import QRScannerScreen from '@/screens/QRScanner/QRScannerScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -19,7 +18,6 @@ function AppNavigator() {
             <Stack.Screen name="Shop" component={ShopScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="SignUp" component={SignUpScreen} />
-            <Stack.Screen name="QRScanner" component={QRScannerScreen} />
         </Stack.Navigator>
     );
 }
