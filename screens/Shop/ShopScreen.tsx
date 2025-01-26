@@ -12,7 +12,6 @@ import { Image } from 'expo-image';
 import type { ShopScreenProps } from '../../types/navigations';
 import type { Shop, MenuItem, ProductCategory } from '../../types/shop';
 import { mockShops } from '../../data/mockData';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 function ShopScreen({ route, navigation }: ShopScreenProps) {
     const [shop, setShop] = useState<Shop | null>(null);
@@ -84,7 +83,7 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-100">
+        <View className="flex-1 bg-gray-100">
             <StatusBar barStyle="default" />
             <View className="flex-row items-center justify-between bg-green-800 px-4 pb-4 pt-12">
                 <TouchableOpacity
@@ -118,7 +117,7 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    className="py-4"
+                    className="px-4 py-4"
                 >
                     {shop.categories?.map((category: ProductCategory) => (
                         <TouchableOpacity
@@ -145,7 +144,7 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
                         .map((item) => (
                             <View
                                 key={item.id}
-                                className="mb-4 flex-row rounded-lg bg-white p-4 shadow"
+                                className="mx-0 mb-4 flex-row overflow-hidden rounded-xl bg-white p-4 shadow-sm"
                             >
                                 <Image
                                     source={item.image}
@@ -176,7 +175,7 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
                         ))}
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 

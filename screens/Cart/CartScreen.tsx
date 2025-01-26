@@ -12,6 +12,7 @@ import {
 import { ArrowLeft, Minus, Plus, Trash2 } from 'react-native-feather';
 import type { CartScreenProps } from '../../types/navigations';
 import type { MenuItem } from '../../types/shop';
+import { Image } from 'expo-image';
 
 function CartScreen({ route, navigation }: CartScreenProps) {
     const [cartItems, setCartItems] = useState<MenuItem[]>(
@@ -82,15 +83,23 @@ function CartScreen({ route, navigation }: CartScreenProps) {
                 {cartItems.map((item: MenuItem) => (
                     <View
                         key={item.id}
-                        className="mb-4 flex-row items-center justify-between rounded-lg bg-white p-4 shadow"
+                        className="mb-4 flex-row items-center justify-between overflow-hidden rounded-xl bg-white p-4 shadow-sm"
                     >
-                        <View className="flex-1">
-                            <Text className="text-base font-semibold text-green-800">
-                                {item.name}
-                            </Text>
-                            <Text className="text-sm text-gray-600">
-                                ₱{item.price.toFixed(2)}
-                            </Text>
+                        <View className="flex-1 flex-row items-center">
+                            <Image
+                                source={item.image}
+                                style={{ width: 60, height: 60 }}
+                                className="mr-4 rounded-lg"
+                                contentFit="cover"
+                            />
+                            <View>
+                                <Text className="text-base font-semibold text-green-800">
+                                    {item.name}
+                                </Text>
+                                <Text className="text-sm text-gray-600">
+                                    ₱{item.price.toFixed(2)}
+                                </Text>
+                            </View>
                         </View>
                         <View className="flex-row items-center">
                             <TouchableOpacity
