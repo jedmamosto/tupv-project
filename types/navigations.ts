@@ -1,55 +1,128 @@
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RouteProp } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
+import { type CartItem } from './shop';
 
 export type RootStackParamList = {
-  Home: undefined;
-  Shop: { shopId: string };
-  Login: undefined;
-  SignUp: undefined;
-  QRScanner: undefined;
+    Home: undefined;
+    Shop: { shopId: string };
+    Cart: { cartItems: CartItem[]; shopId: string };
+    Checkout: { cartItems: CartItem[]; shopId: string };
+    OrderConfirmation: { orderId: string };
+    Login: undefined;
+    SignUp: undefined;
+    QRScanner: undefined;
+    UserProfile: { userId: string };
+    OrderHistory: undefined;
+    PaymentGateway: { amount: number; orderId: string };
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Home"
+    RootStackParamList,
+    'Home'
 >;
 export type ShopScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Shop"
+    RootStackParamList,
+    'Shop'
+>;
+export type CartScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'Cart'
+>;
+export type CheckoutScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'Checkout'
+>;
+export type OrderConfirmationScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'OrderConfirmation'
 >;
 export type LoginScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Login"
+    RootStackParamList,
+    'Login'
 >;
 export type SignUpScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "SignUp"
+    RootStackParamList,
+    'SignUp'
 >;
 export type QRScannerScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  'QRScanner'
+    RootStackParamList,
+    'QRScanner'
+>;
+export type UserProfileScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'UserProfile'
+>;
+export type OrderHistoryScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'OrderHistory'
+>;
+export type PaymentGatewayScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'PaymentGateway'
 >;
 
-export type ShopScreenRouteProp = RouteProp<RootStackParamList, "Shop">;
-
+export type ShopScreenRouteProp = RouteProp<RootStackParamList, 'Shop'>;
+export type CartScreenRouteProp = RouteProp<RootStackParamList, 'Cart'>;
+export type CheckoutScreenRouteProp = RouteProp<RootStackParamList, 'Checkout'>;
+export type OrderConfirmationScreenRouteProp = RouteProp<
+    RootStackParamList,
+    'OrderConfirmation'
+>;
+export type UserProfileScreenRouteProp = RouteProp<
+    RootStackParamList,
+    'UserProfile'
+>;
+export type PaymentGatewayScreenRouteProp = RouteProp<
+    RootStackParamList,
+    'PaymentGateway'
+>;
 
 export interface HomeScreenProps {
-  navigation: HomeScreenNavigationProp;
+    navigation: HomeScreenNavigationProp;
 }
 
 export interface ShopScreenProps {
-  navigation: ShopScreenNavigationProp;
-  route: ShopScreenRouteProp;
+    navigation: ShopScreenNavigationProp;
+    route: ShopScreenRouteProp;
+}
+
+export interface CartScreenProps {
+    navigation: CartScreenNavigationProp;
+    route: CartScreenRouteProp;
+}
+
+export interface CheckoutScreenProps {
+    navigation: CheckoutScreenNavigationProp;
+    route: CheckoutScreenRouteProp;
+}
+
+export interface OrderConfirmationScreenProps {
+    navigation: OrderConfirmationScreenNavigationProp;
+    route: OrderConfirmationScreenRouteProp;
 }
 
 export interface LoginScreenProps {
-  navigation: LoginScreenNavigationProp;
+    navigation: LoginScreenNavigationProp;
 }
 
 export interface SignUpScreenProps {
-  navigation: SignUpScreenNavigationProp;
+    navigation: SignUpScreenNavigationProp;
 }
 
 export interface QRScannerScreenProps {
-  navigation: QRScannerScreenNavigationProp;
+    navigation: QRScannerScreenNavigationProp;
+}
+
+export interface UserProfileScreenProps {
+    navigation: UserProfileScreenNavigationProp;
+    route: UserProfileScreenRouteProp;
+}
+
+export interface OrderHistoryScreenProps {
+    navigation: OrderHistoryScreenNavigationProp;
+}
+
+export interface PaymentGatewayScreenProps {
+    navigation: PaymentGatewayScreenNavigationProp;
+    route: PaymentGatewayScreenRouteProp;
 }
