@@ -15,13 +15,10 @@ import { Image } from 'expo-image';
 import InputField from '@/components/custom/InputField';
 import { useState, useCallback } from 'react';
 import { Button } from '@/components/custom/Button';
-import {
-    LoginScreenNavigationProp,
-    LoginScreenProps,
-} from '@/types/navigations';
 import { loginWithEmailPassword } from '@/lib/firebase/auth';
+import { router } from 'expo-router';
 
-export default function LoginScreen({ navigation }: LoginScreenProps) {
+export default function LoginScreen() {
     // Get screen dimensions for responsive design
     const { width, height } = useWindowDimensions();
     const isTablet = width > 768; // Common tablet breakpoint
@@ -129,7 +126,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             if (response.success) {
                 setEmail('');
                 setPassword('');
-                navigation.navigate('Home');
+                // navigation.navigate('Home');
             } else {
                 setGeneralError(
                     response.error || 'An error occurred during login'
@@ -260,7 +257,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                                         }
                                         label="Sign Up"
                                         onPress={() =>
-                                            navigation.navigate('SignUp')
+                                            router.push('/(auth)/signup')
                                         }
                                     />
                                 </>

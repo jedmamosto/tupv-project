@@ -12,11 +12,11 @@ import {
 import InputField from '@/components/custom/InputField';
 import { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/custom/Button';
-import { SignUpScreenProps } from '@/types/navigations';
 import QRPermissions from '@/components/QRScanner/QRPermissionsModal';
 import { signUpWithEmailPassword } from '@/lib/firebase/auth';
+import { router } from 'expo-router';
 
-export default function SignUpScreen({ navigation, route }: SignUpScreenProps) {
+export default function SignUpScreen() {
     const { width } = useWindowDimensions();
     const isTablet = width > 768;
     const [isLoading, setIsLoading] = useState(false);
@@ -41,15 +41,15 @@ export default function SignUpScreen({ navigation, route }: SignUpScreenProps) {
     const handleInputBlur = useCallback(() => setIsKeyboardFocused(false), []);
     const handleModalStateChange = (state: boolean) => setIsModalVisible(state);
 
-    useEffect(() => {
-        if (route.params?.scannedId) {
-            setSignUpData((prev) => ({
-                ...prev,
-                scannedIdNumber: route.params?.scannedId || '',
-            }));
-            verifyIdMatch();
-        }
-    }, [route.params?.scannedId]);
+    // useEffect(() => {
+    //     if (route.params?.scannedId) {
+    //         setSignUpData((prev) => ({
+    //             ...prev,
+    //             scannedIdNumber: route.params?.scannedId || '',
+    //         }));
+    //         verifyIdMatch();
+    //     }
+    // }, [route.params?.scannedId]);
 
     const validateName = (text: string): boolean => {
         if (!text.trim()) {
@@ -173,7 +173,7 @@ export default function SignUpScreen({ navigation, route }: SignUpScreenProps) {
                     idNumber: '',
                     scannedIdNumber: '',
                 });
-                navigation.navigate('Home');
+                // navigation.navigate('Home');
             } else {
                 setGeneralError(
                     response.error || 'An error occurred during sign up'
@@ -358,7 +358,7 @@ export default function SignUpScreen({ navigation, route }: SignUpScreenProps) {
                                     type="secondary"
                                     pressableClassName={`mt-4 ${isTablet ? 'py-5' : ''}`}
                                     label="Go to Login"
-                                    onPress={() => navigation.navigate('Login')}
+                                    onPress={() => router.push('/(auth)/login')}
                                 />
                             </>
                         )}

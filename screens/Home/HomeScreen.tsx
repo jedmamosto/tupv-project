@@ -11,15 +11,16 @@ import BottomNav from '../../components/Home/BottomNav';
 import { mockShops } from '../../data/mockData';
 import type { Shop } from '../../types/shop';
 import HomeShopCard from '../../components/Home/HomeShopCard';
-import { HomeScreenProps } from '../../types/navigations';
 import { Button } from '@/components/custom/Button';
+import { router } from 'expo-router';
 
-function HomeScreen({ navigation }: HomeScreenProps) {
+function HomeScreen() {
     const [shops, setShops] = useState<Shop[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentTab, setCurrentTab] = useState<'home' | 'cart' | 'profile'>(
         'home'
     );
+    // const router = useRouter();
 
     useEffect(function () {
         function fetchShops() {
@@ -38,8 +39,10 @@ function HomeScreen({ navigation }: HomeScreenProps) {
     }, []);
 
     function handleShopPress(shopId: string) {
-        console.log('Navigating to Shop with shopId:', shopId);
-        navigation.navigate('Shop', { shopId });
+        router.push({
+            pathname: '/(customer)/shop/[shopId]',
+            params: { shopId: shopId },
+        });
     }
 
     function handleItemPress(shopId: string, itemId: string) {
@@ -94,7 +97,7 @@ function HomeScreen({ navigation }: HomeScreenProps) {
                     <Button
                         pressableClassName="w-fit px-4"
                         label="Login"
-                        onPress={() => navigation.navigate('Login')}
+                        onPress={() => router.push('/(auth)/login')}
                     />
                 </View>
             )}
