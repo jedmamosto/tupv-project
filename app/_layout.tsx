@@ -46,7 +46,7 @@ export default function RootLayout() {
                             options={{ headerShown: false }}
                         />
                         <Stack.Screen
-                            name="(vendor)"
+                            name="(vendor)/dashboard"
                             options={{ headerShown: false }}
                         />
                         <Stack.Screen name="+not-found" />
@@ -67,17 +67,22 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
         if (isLoading) return;
 
         const inAuthGroup = segments[0] === '(auth)';
+        const inCustomerGroup = segments[0] === '(customer)';
+        const inVendorGroup = segments[0] === '(vendor)';
 
         if (!user && !inAuthGroup) {
-            console.log('No user');
+            // Redirect to login if not authenticated
             router.replace('/login');
         } else if (user) {
-            console.log('User:', user);
+            // Only redirect if we're at the root or in the wrong role group
             if (userRole === UserRole.Customer) {
-                router.replace('/(customer)/home');
+                if (!segments.length || (!inCustomerGroup && !inAuthGroup)) {
+                    router.replace('/(customer)/home');
+                }
             } else if (userRole === UserRole.Vendor) {
-                console.log('Vendor');
-                router.replace('/(auth)/login');
+                if (!segments.length || (!inVendorGroup && !inAuthGroup)) {
+                    router.replace('/(vendor)/dashboard');
+                }
             } else {
                 router.replace('/(auth)/login');
             }
