@@ -46,7 +46,27 @@ export default function RootLayout() {
                             options={{ headerShown: false }}
                         />
                         <Stack.Screen
+                            name="(customer)/cart"
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="(customer)/checkout"
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
                             name="(vendor)/dashboard"
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="(vendor)/tabs/manage-inventory"
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="(vendor)/tabs/manage-orders"
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="(vendor)/tabs/scan-qr"
                             options={{ headerShown: false }}
                         />
                         <Stack.Screen name="+not-found" />
@@ -74,13 +94,14 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
             // Redirect to login if not authenticated
             router.replace('/login');
         } else if (user) {
+            console.log('User role:', userRole);
             // Only redirect if we're at the root or in the wrong role group
             if (userRole === UserRole.Customer) {
-                if (!segments.length || (!inCustomerGroup && !inAuthGroup)) {
+                if (!segments.length || !inCustomerGroup) {
                     router.replace('/(customer)/home');
                 }
             } else if (userRole === UserRole.Vendor) {
-                if (!segments.length || (!inVendorGroup && !inAuthGroup)) {
+                if (!segments.length || !inVendorGroup) {
                     router.replace('/(vendor)/dashboard');
                 }
             } else {

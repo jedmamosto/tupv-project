@@ -15,9 +15,9 @@ import {
     CheckCircle,
     XCircle,
 } from 'react-native-feather';
-import type { ManageOrdersScreenProps } from '../../types/navigations';
 import type { Order } from '../../types/vendor';
 import { mockOrders } from '../../data/orderMockData';
+import { router } from 'expo-router';
 
 function getStatusColor(status: Order['status']) {
     switch (status) {
@@ -34,7 +34,7 @@ function getStatusColor(status: Order['status']) {
     }
 }
 
-export default function ManageOrders({ navigation }: ManageOrdersScreenProps) {
+export default function ManageOrdersScreen() {
     const [selectedStatus, setSelectedStatus] =
         useState<Order['status']>('received');
     const statuses: {
@@ -61,7 +61,7 @@ export default function ManageOrders({ navigation }: ManageOrdersScreenProps) {
                 {/* Header */}
                 <View className="flex-row items-center bg-primary px-4 py-4">
                     <TouchableOpacity
-                        onPress={() => navigation.goBack()}
+                        onPress={() => router.back()}
                         className="mr-4"
                     >
                         <ArrowLeft stroke="#fff" width={24} height={24} />

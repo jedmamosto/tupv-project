@@ -8,29 +8,32 @@ import {
     Platform,
 } from 'react-native';
 import { Package, Code, Clipboard, ArrowLeft } from 'react-native-feather';
-import type { VendorDashboardScreenProps } from '../../types/navigations';
 import { mockRecentOrder } from '../../data/vendorMockData';
+import { router } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
+import { auth } from '@/lib/firebase/config';
+import { signOut } from '@firebase/auth';
+import { Button } from '@/components/custom/Button';
 
-export default function VendorDashboard({
-    navigation,
-}: VendorDashboardScreenProps) {
+export default function VendorDashboardScreen() {
     const navItems = [
         {
             title: 'Inventory',
             icon: Package,
-            route: 'ManageInventory',
+            route: 'manage-inventory',
         },
         {
             title: 'QR',
             icon: Code,
-            route: 'ScanQR',
+            route: 'scan-qr',
         },
         {
             title: 'Orders',
             icon: Clipboard,
-            route: 'ManageOrders',
+            route: 'manage-orders',
         },
     ];
+    const { user } = useAuth();
 
     return (
         <SafeAreaView className="flex-1 bg-[#f5f5f5]">
@@ -41,7 +44,7 @@ export default function VendorDashboard({
                 {/* Header */}
                 <View className="flex-row items-center bg-primary px-4 py-4">
                     <TouchableOpacity
-                        onPress={() => navigation.goBack()}
+                        onPress={() => router.back()}
                         className="mr-4"
                     >
                         <ArrowLeft stroke="#fff" width={24} height={24} />
@@ -58,7 +61,10 @@ export default function VendorDashboard({
                             key={item.title}
                             className="flex-1 items-center border-r border-gray-100 py-3 last:border-r-0"
                             onPress={() =>
-                                navigation.navigate(item.route as any)
+                                router.push({
+                                    pathname: '/(vendor)/tabs/[slug]',
+                                    params: { slug: item.route },
+                                })
                             }
                         >
                             <item.icon
@@ -83,7 +89,9 @@ export default function VendorDashboard({
                         </View>
                         <TouchableOpacity
                             className="p-4"
-                            onPress={() => navigation.navigate('ManageOrders')}
+                            onPress={() =>
+                                router.push('/(vendor)/tabs/manage-orders')
+                            }
                         >
                             <View className="mb-3 flex-row items-center justify-between">
                                 <Text className="text-lg font-bold text-primary">
@@ -125,6 +133,21 @@ export default function VendorDashboard({
                                 </View>
                             </View>
                         </TouchableOpacity>
+                    </View>
+                    <View className="mt-16">
+                        {user ? (
+                            <Button
+                                pressableClassName="w-fit px-4"
+                                label="Sign Out"
+                                onPress={() => signOut(auth)}
+                            />
+                        ) : (
+                            <Button
+                                pressableClassName="w-fit px-4"
+                                label="Login"
+                                onPress={() => router.push('/(auth)/login')}
+                            />
+                        )}
                     </View>
                 </View>
             </View>

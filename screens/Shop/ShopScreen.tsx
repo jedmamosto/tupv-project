@@ -10,12 +10,11 @@ import {
 } from 'react-native';
 import { ShoppingCart, ArrowLeft } from 'react-native-feather';
 import { Image } from 'expo-image';
-import type { ShopScreenProps } from '../../types/navigations';
 import type { Shop, MenuItem, ProductCategory } from '../../types/shop';
 import { mockShops } from '../../data/mockData';
 import { useLocalSearchParams, router } from 'expo-router';
 
-function ShopScreen({ route, navigation }: ShopScreenProps) {
+function ShopScreen() {
     const [shop, setShop] = useState<Shop | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(
@@ -52,29 +51,25 @@ function ShopScreen({ route, navigation }: ShopScreenProps) {
             }
         });
     }
-
     function handleGoToCart() {
         if (cartItems.length > 0) {
-            navigation.navigate('Cart', {
-                cartItems: cartItems.map((item) => ({
-                    ...item,
-                    quantity: item.quantity || 0,
-                })),
-                shopId,
+            // In Expo Router, we use URL-style navigation patterns
+            router.push({
+                // This assumes you have a cart.tsx or cart/index.tsx file in your app directory
+                pathname: '/(customer)/cart',
+                // Parameters are passed as URLSearchParams in Expo Router
+                params: {
+                    // We need to serialize the cart items since URL params must be strings
+                    cartItems: JSON.stringify(
+                        cartItems.map((item) => ({
+                            ...item,
+                            quantity: item.quantity || 0,
+                        }))
+                    ),
+                    shopId,
+                },
             });
         }
-    }
-    function handleUpdateQuantity(itemId: string, quantity: number) {
-        if (quantity < 0) return;
-        setMenuItems((prev) =>
-            prev.map((item) =>
-                item.id === itemId ? { ...item, quantity } : item
-            )
-        );
-    }
-
-    function handleAddToCart(item: MenuItem) {
-        console.log('Adding to cart:', item);
     }
 
     if (loading) {

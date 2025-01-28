@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import React from 'react';
 import {
     View,
@@ -8,9 +9,8 @@ import {
     Platform,
 } from 'react-native';
 import { ArrowLeft } from 'react-native-feather';
-import type { ScanQRScreenProps } from '../../types/navigations';
 
-export default function ScanQR({ navigation }: ScanQRScreenProps) {
+export default function ScanQRScreen() {
     return (
         <SafeAreaView className="flex-1 bg-light">
             <StatusBar barStyle="default" />
@@ -19,7 +19,7 @@ export default function ScanQR({ navigation }: ScanQRScreenProps) {
             >
                 <View className="flex-row items-center bg-primary px-4 py-4">
                     <TouchableOpacity
-                        onPress={() => navigation.goBack()}
+                        onPress={() => router.back()}
                         className="mr-4"
                     >
                         <ArrowLeft stroke="#fff" width={24} height={24} />

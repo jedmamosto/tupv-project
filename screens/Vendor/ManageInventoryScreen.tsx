@@ -11,13 +11,11 @@ import {
 } from 'react-native';
 import { ArrowLeft, Plus, Edit2, Trash2 } from 'react-native-feather';
 import { Image } from 'expo-image';
-import type { ManageInventoryScreenProps } from '../../types/navigations';
 import type { VendorMenuItem } from '../../types/vendor';
 import { mockInventory } from '../../data/inventoryMockData';
+import { router } from 'expo-router';
 
-export default function ManageInventory({
-    navigation,
-}: ManageInventoryScreenProps) {
+export default function ManageInventoryScreen() {
     const [searchQuery, setSearchQuery] = useState('');
     const [inventory] = useState<VendorMenuItem[]>(mockInventory);
 
@@ -29,7 +27,7 @@ export default function ManageInventory({
             >
                 <View className="flex-row items-center bg-primary px-4 py-4">
                     <TouchableOpacity
-                        onPress={() => navigation.goBack()}
+                        onPress={() => router.back()}
                         className="mr-4"
                     >
                         <ArrowLeft stroke="#fff" width={24} height={24} />

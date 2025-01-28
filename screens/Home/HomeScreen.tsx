@@ -15,11 +15,13 @@ import { Button } from '@/components/custom/Button';
 import { router } from 'expo-router';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
+import { useAuth } from '@/contexts/AuthContext';
 
 function HomeScreen() {
     const [shops, setShops] = useState<Shop[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentTab, setCurrentTab] = useState<TabType>('home');
+    const { user } = useAuth();
 
     useEffect(() => {
         function fetchShops() {
@@ -91,16 +93,19 @@ function HomeScreen() {
                     <Text className="text-lg text-primary">
                         Profile Options
                     </Text>
-                    <Button
-                        pressableClassName="w-fit px-4"
-                        label="Login"
-                        onPress={() => router.push('/(auth)/login')}
-                    />
-                    <Button
-                        pressableClassName="w-fit px-4"
-                        label="Sign Out"
-                        onPress={() => signOut(auth)}
-                    />
+                    {user ? (
+                        <Button
+                            pressableClassName="w-fit px-4"
+                            label="Sign Out"
+                            onPress={() => signOut(auth)}
+                        />
+                    ) : (
+                        <Button
+                            pressableClassName="w-fit px-4"
+                            label="Login"
+                            onPress={() => router.push('/(auth)/login')}
+                        />
+                    )}
                 </View>
             )}
             <BottomNav currentTab={currentTab} onTabPress={handleTabPress} />

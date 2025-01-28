@@ -1,6 +1,6 @@
 import React from 'react';
-import HomeScreen from '@/screens/Home/HomeScreen';
+import VendorDashboardScreen from '@/screens/Vendor/VendorDashboardScreen';
 
-export default function Home() {
-    return <HomeScreen />;
+export default function VendorDashboard() {
+    return <VendorDashboardScreen />;
 }

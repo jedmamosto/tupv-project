@@ -126,7 +126,7 @@ export default function LoginScreen() {
             if (response.success) {
                 setEmail('');
                 setPassword('');
-                // navigation.navigate('Home');
+                console.log('Login successful:', response.user);
             } else {
                 setGeneralError(
                     response.error || 'An error occurred during login'
