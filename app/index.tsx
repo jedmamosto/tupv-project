@@ -1,16 +1,18 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { Link } from 'expo-router';
+// app/index.tsx
+import { View } from 'react-native';
+import { useAuth } from '@/contexts/AuthContext';
+import LoadingScreen from '@/screens/Loading/LoadingScreen';
 
-export default function App() {
-    return (
-        <View className="flex-1 items-center justify-center bg-gray-100">
-            <Text className="">Hello, world!</Text>
-            <Link href="/(customer)/home" asChild>
-                <Pressable>
-                    <Text>GO TO HOME</Text>
-                </Pressable>
-            </Link>
-        </View>
-    );
+export default function Index() {
+    const { isLoading } = useAuth();
+
+    // Only handle the loading state here
+    if (isLoading) {
+        return <LoadingScreen />;
+    }
+
+    // The NavigationGuard in _layout.tsx will handle the routing
+
+    // PUT HERE SPLASH SCREEN
+    return <View />;
 }

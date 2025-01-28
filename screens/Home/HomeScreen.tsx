@@ -13,6 +13,8 @@ import type { Shop } from '../../types/shop';
 import HomeShopCard from '../../components/Home/HomeShopCard';
 import { Button } from '@/components/custom/Button';
 import { router } from 'expo-router';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase/config';
 
 function HomeScreen() {
     const [shops, setShops] = useState<Shop[]>([]);
@@ -98,6 +100,11 @@ function HomeScreen() {
                         pressableClassName="w-fit px-4"
                         label="Login"
                         onPress={() => router.push('/(auth)/login')}
+                    />
+                    <Button
+                        pressableClassName="w-fit px-4"
+                        label="Sign Out"
+                        onPress={() => signOut(auth)}
                     />
                 </View>
             )}

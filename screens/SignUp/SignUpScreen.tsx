@@ -183,6 +183,7 @@ export default function SignUpScreen() {
             setGeneralError('An unexpected error occurred. Please try again');
         } finally {
             setIsLoading(false);
+            router.push('/(customer)/home');
         }
     };
 
