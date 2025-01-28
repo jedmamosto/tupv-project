@@ -7,7 +7,7 @@ import {
     StatusBar,
     SafeAreaView,
 } from 'react-native';
-import BottomNav from '../../components/Home/BottomNav';
+import BottomNav, { type TabType } from '../../components/Home/BottomNav';
 import { mockShops } from '../../data/mockData';
 import type { Shop } from '../../types/shop';
 import HomeShopCard from '../../components/Home/HomeShopCard';
@@ -19,15 +19,12 @@ import { auth } from '@/lib/firebase/config';
 function HomeScreen() {
     const [shops, setShops] = useState<Shop[]>([]);
     const [loading, setLoading] = useState(true);
-    const [currentTab, setCurrentTab] = useState<'home' | 'cart' | 'profile'>(
-        'home'
-    );
-    // const router = useRouter();
+    const [currentTab, setCurrentTab] = useState<TabType>('home');
 
-    useEffect(function () {
+    useEffect(() => {
         function fetchShops() {
             try {
-                setTimeout(function () {
+                setTimeout(() => {
                     setShops(mockShops);
                     setLoading(false);
                 }, 1500);
@@ -51,7 +48,7 @@ function HomeScreen() {
         console.log(`Navigate to item: ${itemId} in shop: ${shopId}`);
     }
 
-    function handleTabPress(tab: 'home' | 'cart' | 'profile') {
+    function handleTabPress(tab: TabType) {
         setCurrentTab(tab);
     }
 
@@ -72,16 +69,14 @@ function HomeScreen() {
                     <Text className="mb-6 text-2xl font-extrabold italic text-primary">
                         Check us out!
                     </Text>
-                    {shops.map(function (shop) {
-                        return (
-                            <HomeShopCard
-                                key={shop.id}
-                                shop={shop}
-                                onShopPress={handleShopPress}
-                                onItemPress={handleItemPress}
-                            />
-                        );
-                    })}
+                    {shops.map((shop) => (
+                        <HomeShopCard
+                            key={shop.id}
+                            shop={shop}
+                            onShopPress={handleShopPress}
+                            onItemPress={handleItemPress}
+                        />
+                    ))}
                 </ScrollView>
             )}
             {currentTab === 'cart' && (
@@ -94,7 +89,7 @@ function HomeScreen() {
             {currentTab === 'profile' && (
                 <View className="flex-1 items-center justify-center gap-6">
                     <Text className="text-lg text-primary">
-                        Profile Coming Soon
+                        Profile Options
                     </Text>
                     <Button
                         pressableClassName="w-fit px-4"
