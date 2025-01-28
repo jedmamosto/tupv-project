@@ -3,22 +3,42 @@ import {
     StatusBar,
     Text,
     SafeAreaView,
-    Button,
     View,
-    Dimensions,
+    useWindowDimensions,
 } from 'react-native';
+import { Button } from '@/components/custom/Button';
+import { useState } from 'react';
 
-interface QRScannerScreenProps {
-    onScan: (data: string) => void;
+interface QRScannerModalProps {
+    onScanComplete: (scannedId: string) => void;
+    onScannerModalStateChange: (state: boolean) => void;
 }
 
-const QRScannerScreen = () => {
+const QRScannerModal = ({
+    onScanComplete,
+    onScannerModalStateChange,
+}: QRScannerModalProps) => {
     const [permission, requestPermission] = useCameraPermissions();
-    // Get the device screen dimensions to set proper camera size
-    const { width, height } = Dimensions.get('window');
+    const { width, height } = useWindowDimensions();
+    const [error, setError] = useState('');
+
+    // Function to handle successful QR scan
+    const handleQRScanned = ({ data }: { data: string }) => {
+        const idPattern = /^TUPV-[0-9]{2}-[0-9]{4}$/;
+        const formattedData = data.toUpperCase();
+        if (idPattern.test(formattedData)) {
+            setTimeout(() => {
+                onScanComplete(formattedData);
+            }, 1000);
+        } else {
+            setError('Invalid QR code format. Please try again.');
+            setTimeout(() => {
+                setError('');
+            }, 3000);
+        }
+    };
 
     if (!permission) {
-        // Camera permissions are still loading
         return (
             <View className="flex-1 items-center justify-center">
                 <Text>Loading camera permissions...</Text>
@@ -27,13 +47,16 @@ const QRScannerScreen = () => {
     }
 
     if (!permission.granted) {
-        // Camera permissions are not granted yet
         return (
             <View className="flex-1 items-center justify-center p-4">
                 <Text className="mb-4 text-center">
                     We need your permission to use the camera for QR scanning
                 </Text>
-                <Button onPress={requestPermission} title="Grant Permission" />
+                <Button
+                    label="Grant Permission"
+                    onPress={requestPermission}
+                    type="primary" // Using the custom Button type prop
+                />
             </View>
         );
     }
@@ -41,8 +64,6 @@ const QRScannerScreen = () => {
     return (
         <SafeAreaView className="flex-1 bg-black">
             <StatusBar barStyle="light-content" />
-
-            {/* Camera View */}
             <View className="flex-1">
                 <CameraView
                     style={{
@@ -52,9 +73,7 @@ const QRScannerScreen = () => {
                     }}
                     active={true}
                     facing="back"
-                    onBarcodeScanned={({ data }) => {
-                        console.log('Scanned data:', data);
-                    }}
+                    onBarcodeScanned={handleQRScanned}
                 />
 
                 {/* Overlay Container */}
@@ -98,9 +117,24 @@ const QRScannerScreen = () => {
                         </View>
                     </View>
                 </View>
+                <View className="absolute bottom-8 w-full items-center">
+                    <Button
+                        label="Cancel"
+                        onPress={() => onScannerModalStateChange(false)}
+                        type="secondary" // Using the custom Button type prop
+                        pressableClassName="bg-white/20"
+                    />
+                </View>
+            </View>
+            <View className="absolute top-8 w-full items-center">
+                {error && (
+                    <Text className="rounded-lg bg-red-500/80 px-4 py-2 text-white">
+                        {error}
+                    </Text>
+                )}
             </View>
         </SafeAreaView>
     );
 };
 
-export default QRScannerScreen;
+export default QRScannerModal;

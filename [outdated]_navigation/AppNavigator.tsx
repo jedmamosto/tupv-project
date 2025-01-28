@@ -4,14 +4,13 @@ import HomeScreen from '../screens/Home/HomeScreen';
 import ShopScreen from '../screens/Shop/ShopScreen';
 import CartScreen from '../screens/Cart/CartScreen';
 import CheckoutScreen from '../screens/Checkout/CheckoutScreen';
+import { RootStackParamList } from '../types/old/navigations';
 import LoginScreen from '@/screens/Login/LoginScreen';
 import SignUpScreen from '@/screens/SignUp/SignUpScreen';
-import QRScannerScreen from '@/screens/QRScanner/QRScannerScreen';
-import VendorDashboardScreen from '@/screens/Vendor/VendorDashboard';
-import ManageInventoryScreen from '@/screens/Vendor/ManageInventory';
-import ManageOrdersScreen from '@/screens/Vendor/ManageOrders';
-import ScanQRScreen from '@/screens/Vendor/ScanQR';
-import type { RootStackParamList } from '../types/navigations';
+import VendorDashboardScreen from '@/screens/Vendor/VendorDashboardScreen';
+import ManageInventoryScreen from '@/screens/Vendor/ManageInventoryScreen';
+import ManageOrdersScreen from '@/screens/Vendor/ManageOrdersScreen';
+import ScanQRScreen from '@/screens/Vendor/ScanQRScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -27,7 +26,6 @@ function AppNavigator() {
             <Stack.Screen name="Checkout" component={CheckoutScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="SignUp" component={SignUpScreen} />
-            <Stack.Screen name="QRScanner" component={QRScannerScreen} />
             <Stack.Screen
                 name="VendorDashboard"
                 component={VendorDashboardScreen}

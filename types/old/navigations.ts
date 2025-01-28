@@ -1,6 +1,6 @@
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
-import type { CartItem } from './shop';
+import type { CartItem } from '../shop';
 
 export type RootStackParamList = {
     Home: undefined;

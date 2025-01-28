@@ -10,15 +10,16 @@ import {
     StatusBar,
 } from 'react-native';
 import { ArrowLeft, Minus, Plus, Trash2 } from 'react-native-feather';
-import type { CartScreenProps } from '../../types/navigations';
 import type { MenuItem } from '../../types/shop';
 import { Image } from 'expo-image';
+import { router, useLocalSearchParams } from 'expo-router';
 
-function CartScreen({ route, navigation }: CartScreenProps) {
-    const [cartItems, setCartItems] = useState<MenuItem[]>(
-        route.params.cartItems
-    );
-    const { shopId } = route.params;
+function CartScreen() {
+    const params = useLocalSearchParams();
+    const [cartItems, setCartItems] = useState<MenuItem[]>(() => {
+        return JSON.parse(params.cartItems as string);
+    });
+    const shopId = params.shopId as string;
     const [loading, setLoading] = useState(false);
 
     function calculateTotal() {
@@ -52,18 +53,23 @@ function CartScreen({ route, navigation }: CartScreenProps) {
         setLoading(true);
         setTimeout(() => {
             setLoading(false);
-            navigation.navigate('Checkout', {
-                cartItems: cartItems.map((item) => ({
-                    ...item,
-                    quantity: item.quantity || 0,
-                })),
-                shopId,
+            router.push({
+                pathname: '/(customer)/checkout',
+                params: {
+                    cartItems: JSON.stringify(
+                        cartItems.map((item) => ({
+                            ...item,
+                            quantity: item.quantity || 0,
+                        }))
+                    ),
+                    shopId,
+                },
             });
         }, 1000);
     }
 
     function handleAddMoreItems() {
-        navigation.goBack();
+        router.back();
     }
 
     return (
@@ -71,7 +77,7 @@ function CartScreen({ route, navigation }: CartScreenProps) {
             <StatusBar barStyle="default" />
             <View className="flex-row items-center bg-green-800 px-4 pb-4 pt-12">
                 <TouchableOpacity
-                    onPress={() => navigation.goBack()}
+                    onPress={() => router.back()}
                     className="mr-4"
                 >
                     <ArrowLeft stroke="#fff" width={24} height={24} />

@@ -10,19 +10,21 @@ import {
     StatusBar,
 } from 'react-native';
 import { ArrowLeft } from 'react-native-feather';
-import type { CheckoutScreenProps } from '../../types/navigations';
 import type { CartItem } from '../../types/shop';
+import { router, useLocalSearchParams } from 'expo-router';
 
-function CheckoutScreen({ route, navigation }: CheckoutScreenProps) {
+function CheckoutScreen() {
     const [loading, setLoading] = useState(false);
-    const { cartItems } = route.params;
+    const params = useLocalSearchParams();
+    const cartItems = JSON.parse(params.cartItems as string);
     const [selectedPayment, setSelectedPayment] = useState<
         'counter' | 'online' | null
     >(null);
 
     function calculateTotal() {
         return cartItems.reduce(
-            (sum, item) => sum + item.price * item.quantity,
+            (sum: number, item: { price: number; quantity: any }) =>
+                sum + item.price * (item.quantity ?? 1),
             0
         );
     }
@@ -40,18 +42,21 @@ function CheckoutScreen({ route, navigation }: CheckoutScreenProps) {
         setTimeout(() => {
             setLoading(false);
             if (selectedPayment === 'counter') {
-                navigation.navigate('OrderConfirmation', { orderId: '123456' });
+                router.push({
+                    pathname: '/(customer)/order-success',
+                    params: { orderId: '123456' },
+                });
             } else {
-                navigation.navigate('PaymentGateway', {
-                    amount: calculateTotal(),
-                    orderId: '123456',
+                router.push({
+                    pathname: '/(customer)/payment-gateway',
+                    params: { orderId: '123456' },
                 });
             }
         }, 2000);
     }
 
     function handleGoBack() {
-        navigation.goBack();
+        router.back();
     }
 
     return (

@@ -11,13 +11,17 @@ import BottomNav, { type TabType } from '../../components/Home/BottomNav';
 import { mockShops } from '../../data/mockData';
 import type { Shop } from '../../types/shop';
 import HomeShopCard from '../../components/Home/HomeShopCard';
-import type { HomeScreenProps } from '../../types/navigations';
 import { Button } from '@/components/custom/Button';
+import { router } from 'expo-router';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase/config';
+import { useAuth } from '@/contexts/AuthContext';
 
-function HomeScreen({ navigation }: HomeScreenProps) {
+function HomeScreen() {
     const [shops, setShops] = useState<Shop[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentTab, setCurrentTab] = useState<TabType>('home');
+    const { user } = useAuth();
 
     useEffect(() => {
         function fetchShops() {
@@ -36,8 +40,10 @@ function HomeScreen({ navigation }: HomeScreenProps) {
     }, []);
 
     function handleShopPress(shopId: string) {
-        console.log('Navigating to Shop with shopId:', shopId);
-        navigation.navigate('Shop', { shopId });
+        router.push({
+            pathname: '/(customer)/shop/[shopId]',
+            params: { shopId: shopId },
+        });
     }
 
     function handleItemPress(shopId: string, itemId: string) {
@@ -87,16 +93,19 @@ function HomeScreen({ navigation }: HomeScreenProps) {
                     <Text className="text-lg text-primary">
                         Profile Options
                     </Text>
-                    <Button
-                        pressableClassName="w-fit px-4"
-                        label="Login"
-                        onPress={() => navigation.navigate('Login')}
-                    />
-                    <Button
-                        pressableClassName="w-fit px-4"
-                        label="Vendor Dashboard"
-                        onPress={() => navigation.navigate('VendorDashboard')}
-                    />
+                    {user ? (
+                        <Button
+                            pressableClassName="w-fit px-4"
+                            label="Sign Out"
+                            onPress={() => signOut(auth)}
+                        />
+                    ) : (
+                        <Button
+                            pressableClassName="w-fit px-4"
+                            label="Login"
+                            onPress={() => router.push('/(auth)/login')}
+                        />
+                    )}
                 </View>
             )}
             <BottomNav currentTab={currentTab} onTabPress={handleTabPress} />
