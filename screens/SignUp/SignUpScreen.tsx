@@ -198,7 +198,7 @@ export default function SignUpScreen() {
           <View style={{ width: containerWidth }} className="bg-white/90 rounded-3xl p-6 shadow-lg">
             <View className="items-center mb-6">
               <Image
-                source={require("@/assets/images/grubly-logo-nobg.png")}
+                source={require("@/assets/images/new-logo-nobg.jpg")}
                 style={{ width: 120, height: 120 }}
                 contentFit="contain"
               />

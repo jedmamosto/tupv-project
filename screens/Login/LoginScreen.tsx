@@ -131,7 +131,7 @@ export default function LoginScreen() {
           >
             <Animated.View entering={FadeInDown.duration(800)} className="items-center mb-6">
               <Image
-                source={require("@/assets/images/grubly-logo-nobg.png")}
+                source={require("@/assets/images/new-logo-nobg.jpg")}
                 style={{ width: 120, height: 120 }}
                 contentFit="contain"
               />
