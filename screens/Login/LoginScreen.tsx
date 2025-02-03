@@ -1,271 +1,194 @@
+import { useState } from "react"
 import {
-    ScrollView,
-    View,
-    Text,
-    SafeAreaView,
-    StatusBar,
-    KeyboardAvoidingView,
-    Platform,
-    useWindowDimensions,
-    // Added for platform-specific styling
-    NativeSyntheticEvent,
-    TextInputFocusEventData,
-} from 'react-native';
-import { Image } from 'expo-image';
-import InputField from '@/components/custom/InputField';
-import { useState, useCallback } from 'react';
-import { Button } from '@/components/custom/Button';
-import { loginWithEmailPassword } from '@/lib/firebase/auth';
-import { router } from 'expo-router';
+  Text,
+  ScrollView,
+  KeyboardAvoidingView,
+  SafeAreaView,
+  Platform,
+  StatusBar,
+  useWindowDimensions,
+  TouchableOpacity,
+} from "react-native"
+import { Image } from "expo-image"
+import InputField from "@/components/custom/InputField"
+import { Button } from "@/components/custom/Button"
+import { loginWithEmailPassword } from "@/lib/firebase/auth"
+import { router } from "expo-router"
+import Animated, {
+  FadeInDown,
+  FadeInUp,
+  Layout,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated"
+import { LinearGradient } from "expo-linear-gradient"
+import { Feather } from "@expo/vector-icons"
 
 export default function LoginScreen() {
-    // Get screen dimensions for responsive design
-    const { width, height } = useWindowDimensions();
-    const isTablet = width > 768; // Common tablet breakpoint
+  const { width } = useWindowDimensions()
+  const isTablet = width > 768
+  const [isLoading, setIsLoading] = useState(false)
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: "",
+  })
 
-    // State management
-    const [isLoading, setIsLoading] = useState(false);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [emailError, setEmailError] = useState('');
-    const [passwordError, setPasswordError] = useState('');
-    const [generalError, setGeneralError] = useState('');
+  const [emailError, setEmailError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [generalError, setGeneralError] = useState("")
 
-    // Track keyboard focus for better scroll handling
-    const [isKeyboardFocused, setIsKeyboardFocused] = useState(false);
+  // Animation for the floating action button
+  const fabScale = useSharedValue(1)
+  const fabAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: fabScale.value }],
+    }
+  })
 
-    // We'll adjust the content padding when keyboard is focused
-    const getContentPadding = () => {
-        if (isKeyboardFocused) {
-            // When keyboard is open, reduce top padding to show more content
-            return isTablet ? 'pt-4' : 'pt-2';
-        }
-        // Normal padding when keyboard is closed
-        return isTablet ? 'justify-center' : 'pt-12';
-    };
+  const handleFabPress = () => {
+    fabScale.value = withSpring(0.9, {}, () => {
+      fabScale.value = withSpring(1)
+    })
+    router.push("/(auth)/signup")
+  }
 
-    // We'll adjust logo visibility based on keyboard focus
-    const getLogoStyle = () => {
-        if (isKeyboardFocused && !isTablet) {
-            // Hide logo on phones when keyboard is open to save space
-            return 'hidden';
-        }
-        // Show logo with appropriate spacing otherwise
-        return `mb-8 ${isTablet ? 'mb-12' : ''} items-center justify-center`;
-    };
+  const validateEmail = (text: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const isValid = emailRegex.test(text)
+    setEmailError(isValid ? "" : "Please enter a valid email address")
+    return isValid
+  }
 
-    const handleInputFocus = useCallback(
-        (event: NativeSyntheticEvent<TextInputFocusEventData>) => {
-            setIsKeyboardFocused(true);
-        },
-        []
-    );
+  const validatePassword = (password: string): boolean => {
+    if (password.length < 8) {
+      setPasswordError("Password must be at least 8 characters")
+      return false
+    }
+    setPasswordError("")
+    return true
+  }
 
-    const handleInputBlur = useCallback(() => {
-        setIsKeyboardFocused(false);
-    }, []);
+  const validateAllInputs = (): boolean => {
+    const isEmailValid = validateEmail(loginData.email)
+    const isPasswordValid = validatePassword(loginData.password)
+    return isEmailValid && isPasswordValid
+  }
 
-    // Calculate responsive dimensions
-    const logoSize = isTablet
-        ? Math.min(width * 0.2, 300) // Tablet size (20% of width, max 300)
-        : Math.min(width * 0.4, 200); // Phone size (40% of width, max 200)
+  const handleLogin = async () => {
+    if (!validateAllInputs()) return
 
-    // Container width for form elements
-    const containerWidth = isTablet
-        ? Math.min(width * 0.6, 600) // Tablet size (60% of width, max 600)
-        : '100%'; // Phone size (full width)
+    try {
+      setIsLoading(true)
+      setGeneralError("")
 
-    // Email validation with improved UX
-    const validateEmail = (text: string): boolean => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const isValid = emailRegex.test(text);
-        // Only show error if user has started typing
-        if (text.length > 0) {
-            setEmailError(isValid ? '' : 'Please enter a valid email address');
-        } else {
-            setEmailError('');
-        }
-        return isValid;
-    };
+      const response = await loginWithEmailPassword(loginData.email, loginData.password)
 
-    // Input validation with improved feedback
-    const validateInputs = (): boolean => {
-        setEmailError('');
-        setPasswordError('');
-        setGeneralError('');
+      if (response.success) {
+        setLoginData({
+          email: "",
+          password: "",
+        })
+        router.push("/(customer)/home")
+      } else {
+        setGeneralError(response.error || "An error occurred during login")
+      }
+    } catch (error) {
+      setGeneralError("An unexpected error occurred. Please try again")
+      console.error("Login error:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-        let isValid = true;
+  const containerWidth = isTablet ? Math.min(width * 0.6, 600) : "100%"
 
-        if (!email) {
-            setEmailError('Email is required');
-            isValid = false;
-        } else if (!validateEmail(email)) {
-            isValid = false;
-        }
+  return (
+    <SafeAreaView className="flex-1">
+      <StatusBar barStyle="light-content" backgroundColor="#3d5300" />
+      <LinearGradient colors={["#3d5300", "#5a7d00", "#7da900"]} className="absolute h-full w-full" />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+        keyboardVerticalOffset={Platform.OS === "ios" ? (isTablet ? 40 : 20) : 0}
+      >
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            paddingHorizontal: isTablet ? 32 : 24,
+            paddingVertical: isTablet ? 48 : 32,
+          }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
+          <Animated.View
+            style={{ width: containerWidth }}
+            entering={FadeInDown.duration(600)}
+            layout={Layout.springify()}
+            className="bg-white/90 rounded-3xl shadow-lg p-6"
+          >
+            <Animated.View entering={FadeInDown.duration(800)} className="items-center mb-6">
+              <Image
+                source={require("@/assets/images/grubly-logo-nobg.png")}
+                style={{ width: 120, height: 120 }}
+                contentFit="contain"
+              />
+              <Text className="mt-4 text-3xl font-bold text-primary">Welcome Back</Text>
+            </Animated.View>
 
-        if (!password) {
-            setPasswordError('Password is required');
-            isValid = false;
-        } else if (password.length < 8) {
-            setPasswordError('Password must be at least 8 characters');
-            isValid = false;
-        }
+            <Animated.View entering={FadeInUp.duration(600).delay(200)} className="space-y-4">
+              <InputField
+                label="Email Address"
+                value={loginData.email}
+                onChangeText={(text) => {
+                  setLoginData((prev) => ({ ...prev, email: text }))
+                  validateEmail(text)
+                }}
+                error={emailError}
+                placeholder="juandelacruz@email.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                helperText="Enter your email"
+              />
 
-        return isValid;
-    };
+              <InputField
+                label="Password"
+                value={loginData.password}
+                onChangeText={(text) => {
+                  setLoginData((prev) => ({ ...prev, password: text }))
+                  validatePassword(text)
+                }}
+                error={passwordError}
+                placeholder="Your password"
+                secureTextEntry={true}
+                autoCapitalize="none"
+                helperText="Enter your password"
+              />
 
-    const handleLogin = async () => {
-        if (!validateInputs()) return;
+              {generalError && (
+                <Animated.Text className="text-center text-sm text-danger" entering={FadeInUp.duration(300)}>
+                  {generalError}
+                </Animated.Text>
+              )}
 
-        try {
-            setIsLoading(true);
-            setGeneralError('');
+              <Button
+                pressableClassName={`mt-6 ${isTablet ? "py-5" : ""}`}
+                label={isLoading ? "Please wait..." : "Login"}
+                onPress={handleLogin}
+              />
+            </Animated.View>
+          </Animated.View>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
-            const response = await loginWithEmailPassword(email, password);
-
-            if (response.success) {
-                setEmail('');
-                setPassword('');
-                console.log('Login successful:', response.user);
-            } else {
-                setGeneralError(
-                    response.error || 'An error occurred during login'
-                );
-            }
-        } catch (err) {
-            setGeneralError('An unexpected error occurred. Please try again');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <SafeAreaView className="flex-1 bg-light">
-            <StatusBar
-                barStyle={
-                    Platform.OS === 'ios' ? 'dark-content' : 'light-content'
-                }
-                backgroundColor={
-                    Platform.OS === 'android' ? '#3d5300' : undefined
-                }
-            />
-            <KeyboardAvoidingView
-                className="flex-1"
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                keyboardVerticalOffset={
-                    Platform.OS === 'ios' ? (isTablet ? 40 : 20) : 0
-                }
-            >
-                <ScrollView
-                    contentContainerClassName={`min-h-screen flex-1 items-center 
-                        ${getContentPadding()}`}
-                    keyboardShouldPersistTaps="handled"
-                    keyboardDismissMode="on-drag"
-                >
-                    {/* Main container with responsive width */}
-                    <View
-                        style={{
-                            width: isTablet
-                                ? Math.min(width * 0.6, 600)
-                                : '100%',
-                        }}
-                        className="px-6"
-                    >
-                        {/* Logo container with dynamic visibility */}
-                        <View className={getLogoStyle()}>
-                            <Image
-                                source={require('@/assets/images/grubly-logo.png')}
-                                contentFit="contain"
-                                style={{
-                                    width: isTablet
-                                        ? Math.min(width * 0.2, 300)
-                                        : Math.min(width * 0.4, 200),
-                                    height: isTablet
-                                        ? Math.min(width * 0.2, 300)
-                                        : Math.min(width * 0.4, 200),
-                                }}
-                                transition={200}
-                            />
-                        </View>
-
-                        {/* Form container with adjusted spacing when keyboard is open */}
-                        <View
-                            className={`w-full ${isTablet ? 'px-8' : ''} ${isKeyboardFocused && !isTablet ? 'space-y-2' : 'space-y-4'}`}
-                        >
-                            <InputField
-                                label="Email Address"
-                                value={email}
-                                onChangeText={setEmail}
-                                placeholder="juandelacruz@email.com"
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                helperText="Enter your registered email"
-                                error={emailError}
-                                editable={!isLoading}
-                                onFocus={handleInputFocus}
-                                onBlur={handleInputBlur}
-                                containerClass={`${isTablet ? 'mb-6' : ''} 
-                                    ${isKeyboardFocused && !isTablet ? 'mb-1' : ''}`}
-                            />
-
-                            <InputField
-                                label="Password"
-                                value={password}
-                                onChangeText={setPassword}
-                                placeholder="Your password"
-                                keyboardType="default"
-                                secureTextEntry={true}
-                                autoCapitalize="none"
-                                helperText="Enter your registered password"
-                                error={passwordError}
-                                editable={!isLoading}
-                                onFocus={handleInputFocus}
-                                onBlur={handleInputBlur}
-                                containerClass={`${isTablet ? 'mb-6' : ''} 
-                                    ${isKeyboardFocused && !isTablet ? 'mb-1' : ''}`}
-                            />
-
-                            {/* Conditionally render error message with adjusted spacing */}
-                            {generalError ? (
-                                <Text
-                                    className={`text-center text-sm text-danger ${isKeyboardFocused && !isTablet ? 'my-1' : 'my-4'}`}
-                                >
-                                    {generalError}
-                                </Text>
-                            ) : null}
-
-                            <Button
-                                pressableClassName={`
-                                    ${isKeyboardFocused && !isTablet ? 'mt-2' : 'mt-4'}
-                                    ${isTablet ? 'py-5' : ''}`}
-                                label={isLoading ? 'Please wait...' : 'Login'}
-                                onPress={handleLogin}
-                                type={isLoading ? 'secondary' : 'primary'}
-                            />
-
-                            {/* Only show divider and signup when keyboard is not focused on phones */}
-                            {(!isKeyboardFocused || isTablet) && (
-                                <>
-                                    <Text className="mb-4 mt-6 text-center font-bold text-primary-200">
-                                        OR
-                                    </Text>
-
-                                    <Button
-                                        type="secondary"
-                                        pressableClassName={
-                                            isTablet ? 'py-5' : ''
-                                        }
-                                        label="Sign Up"
-                                        onPress={() =>
-                                            router.push('/(auth)/signup')
-                                        }
-                                    />
-                                </>
-                            )}
-                        </View>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
-    );
+      <Animated.View style={[fabAnimatedStyle, { position: "absolute", right: 20, bottom: 20 }]}>
+        <TouchableOpacity onPress={handleFabPress} className="bg-white rounded-full p-4 shadow-lg">
+          <Feather name="user-plus" size={24} color="#3d5300" />
+        </TouchableOpacity>
+      </Animated.View>
+    </SafeAreaView>
+  )
 }
+
