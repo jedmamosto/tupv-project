@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     View,
     Text,
-    ScrollView,
     ActivityIndicator,
     StatusBar,
     TouchableOpacity,
@@ -10,9 +9,21 @@ import {
 } from 'react-native';
 import { ShoppingCart, ArrowLeft } from 'react-native-feather';
 import { Image } from 'expo-image';
-import type { Shop, MenuItem, ProductCategory } from '../../types/shop';
-import { mockShops } from '../../data/mockData';
+import Animated, {
+    FadeInDown,
+    FadeInRight,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    interpolate,
+    useAnimatedScrollHandler,
+} from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import type { Shop, MenuItem, ProductCategory } from '@/types/shop';
+import { mockShops } from '@/data/mockData';
 import { useLocalSearchParams, router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCart } from '@/contexts/CartContext';
 
 function ShopScreen() {
     const [shop, setShop] = useState<Shop | null>(null);
@@ -20,8 +31,32 @@ function ShopScreen() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(
         null
     );
-    const [cartItems, setCartItems] = useState<MenuItem[]>([]);
     const { shopId } = useLocalSearchParams<{ shopId: string }>();
+    const insets = useSafeAreaInsets();
+    const { cartItems, addToCart } = useCart();
+
+    const scrollY = useSharedValue(0);
+    const cartBadgeScale = useSharedValue(1);
+
+    const scrollHandler = useAnimatedScrollHandler({
+        onScroll: (event) => {
+            scrollY.value = event.contentOffset.y;
+        },
+    });
+
+    const headerStyle = useAnimatedStyle(() => ({
+        opacity: interpolate(scrollY.value, [0, 100], [1, 1], 'clamp'),
+    }));
+
+    const imageStyle = useAnimatedStyle(() => ({
+        transform: [
+            { scale: interpolate(scrollY.value, [-100, 0], [1.2, 1], 'clamp') },
+        ],
+    }));
+
+    const cartBadgeStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: cartBadgeScale.value }],
+    }));
 
     useEffect(() => {
         function fetchShop() {
@@ -38,36 +73,17 @@ function ShopScreen() {
     }, [shopId]);
 
     function handleAddToCart(item: MenuItem) {
-        setCartItems((prev) => {
-            const existingItem = prev.find((i) => i.id === item.id);
-            if (existingItem) {
-                return prev.map((i) =>
-                    i.id === item.id
-                        ? { ...i, quantity: (i.quantity || 0) + 1 }
-                        : i
-                );
-            } else {
-                return [...prev, { ...item, quantity: 1 }];
-            }
+        addToCart(item);
+        cartBadgeScale.value = withSpring(1.2, {}, () => {
+            cartBadgeScale.value = withSpring(1);
         });
     }
+
     function handleGoToCart() {
         if (cartItems.length > 0) {
-            // In Expo Router, we use URL-style navigation patterns
             router.push({
-                // This assumes you have a cart.tsx or cart/index.tsx file in your app directory
                 pathname: '/(customer)/cart',
-                // Parameters are passed as URLSearchParams in Expo Router
-                params: {
-                    // We need to serialize the cart items since URL params must be strings
-                    cartItems: JSON.stringify(
-                        cartItems.map((item) => ({
-                            ...item,
-                            quantity: item.quantity || 0,
-                        }))
-                    ),
-                    shopId,
-                },
+                params: { shopId },
             });
         }
     }
@@ -77,7 +93,12 @@ function ShopScreen() {
             <View className="flex-1 items-center justify-center bg-gray-100">
                 <StatusBar barStyle="light-content" backgroundColor="#3d5300" />
                 <ActivityIndicator size="large" color="#3d5300" />
-                <Text className="mt-4 text-green-800">Loading menu...</Text>
+                <Animated.Text
+                    entering={FadeInDown}
+                    className="mt-4 text-green-800"
+                >
+                    Loading menu...
+                </Animated.Text>
             </View>
         );
     }
@@ -86,47 +107,81 @@ function ShopScreen() {
         return (
             <View className="flex-1 items-center justify-center bg-gray-100">
                 <StatusBar barStyle="light-content" backgroundColor="#3d5300" />
-                <Text className="text-red-500">Shop not found</Text>
+                <Animated.Text entering={FadeInDown} className="text-red-500">
+                    Shop not found
+                </Animated.Text>
             </View>
         );
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-100">
-            <StatusBar barStyle="default" />
-            <View className="flex-row items-center justify-between bg-green-800 px-4 pb-4 pt-12">
-                <TouchableOpacity
-                    onPress={() => router.back()}
-                    className="mr-4"
+        <SafeAreaView
+            className="flex-1 bg-gray-100"
+            style={{ paddingTop: insets.top }}
+        >
+            <StatusBar barStyle="light-content" backgroundColor="#3d5300" />
+            <Animated.View
+                style={[headerStyle, { zIndex: 100 }]}
+                className="absolute left-0 right-0"
+            >
+                <LinearGradient
+                    colors={[
+                        'rgba(61, 83, 0, 0.9)',
+                        'rgba(61, 83, 0, 0.7)',
+                        'transparent',
+                    ]}
+                    className="flex-row items-center justify-between px-4 py-3"
+                    style={{ marginTop: insets.top }}
                 >
-                    <ArrowLeft stroke="#fff" width={24} height={24} />
-                </TouchableOpacity>
-                <Text className="flex-1 text-lg font-bold text-white">
-                    {shop.name}
-                </Text>
-                <TouchableOpacity onPress={handleGoToCart} className="relative">
-                    <ShoppingCart stroke="#fff" width={24} height={24} />
-                    {cartItems.length > 0 && (
-                        <View className="absolute -right-2 -top-2 h-5 w-5 items-center justify-center rounded-full bg-red-500">
-                            <Text className="text-xs font-bold text-white">
-                                {cartItems.length}
-                            </Text>
-                        </View>
-                    )}
-                </TouchableOpacity>
-            </View>
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="rounded-full bg-black/20 p-2"
+                    >
+                        <ArrowLeft stroke="#fff" width={24} height={24} />
+                    </TouchableOpacity>
+                    <Text
+                        numberOfLines={1}
+                        className="ml-4 flex-1 text-base font-bold text-white"
+                    >
+                        {shop?.name}
+                    </Text>
+                    <TouchableOpacity
+                        onPress={handleGoToCart}
+                        className="relative rounded-full bg-black/20 p-2"
+                    >
+                        <ShoppingCart stroke="#fff" width={24} height={24} />
+                        {cartItems.length > 0 && (
+                            <Animated.View
+                                style={cartBadgeStyle}
+                                className="absolute -right-2 -top-2 h-5 w-5 items-center justify-center rounded-full bg-red-500"
+                            >
+                                <Text className="text-xs font-bold text-white">
+                                    {cartItems.length}
+                                </Text>
+                            </Animated.View>
+                        )}
+                    </TouchableOpacity>
+                </LinearGradient>
+            </Animated.View>
 
-            <ScrollView className="flex-1">
-                <Image
-                    source={shop.coverImage}
-                    style={{ width: '100%', height: 160 }}
-                    contentFit="cover"
-                />
+            <Animated.ScrollView
+                className="flex-1"
+                onScroll={scrollHandler}
+                scrollEventThrottle={16}
+            >
+                <Animated.View style={imageStyle}>
+                    <Image
+                        source={shop.coverImage}
+                        style={{ width: '100%', height: 200 }}
+                        contentFit="cover"
+                    />
+                </Animated.View>
 
-                <ScrollView
+                <Animated.ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     className="px-4 py-4"
+                    entering={FadeInRight.delay(300)}
                 >
                     {shop.categories?.map((category: ProductCategory) => (
                         <TouchableOpacity
@@ -139,20 +194,27 @@ function ShopScreen() {
                             }`}
                         >
                             <Text
-                                className={`${selectedCategory === category.id ? 'text-white' : 'text-gray-800'} font-semibold`}
+                                className={`${
+                                    selectedCategory === category.id
+                                        ? 'text-white'
+                                        : 'text-gray-800'
+                                } font-semibold`}
                             >
                                 {category.name}
                             </Text>
                         </TouchableOpacity>
                     ))}
-                </ScrollView>
+                </Animated.ScrollView>
 
                 <View className="p-4">
                     {shop.menuItems
                         .filter((item) => item.category === selectedCategory)
-                        .map((item) => (
-                            <View
+                        .map((item, index) => (
+                            <Animated.View
                                 key={item.id}
+                                entering={FadeInDown.delay(
+                                    index * 100
+                                ).springify()}
                                 className="mx-0 mb-4 flex-row overflow-hidden rounded-xl bg-white p-4 shadow-sm"
                             >
                                 <Image
@@ -184,10 +246,10 @@ function ShopScreen() {
                                         Add
                                     </Text>
                                 </TouchableOpacity>
-                            </View>
+                            </Animated.View>
                         ))}
                 </View>
-            </ScrollView>
+            </Animated.ScrollView>
         </SafeAreaView>
     );
 }

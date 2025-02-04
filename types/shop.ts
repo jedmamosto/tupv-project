@@ -34,6 +34,7 @@ export interface Shop {
 
 export interface CartItem extends MenuItem {
     quantity: number;
+    shopId: string;
 }
 
 export interface Order {
