@@ -47,7 +47,11 @@ export default function ManageInventoryScreen() {
 
                     <TouchableOpacity
                         className="mb-4 flex-row items-center justify-center rounded-lg bg-primary px-4 py-3"
-                        onPress={() => console.log('Add new item')}
+                        onPress={() =>
+                            router.push(
+                                '/(vendor)/tabs/(inventory)/add-menu-item'
+                            )
+                        }
                     >
                         <Plus stroke="#fff" width={20} height={20} />
                         <Text className="ml-2 font-medium text-light">
