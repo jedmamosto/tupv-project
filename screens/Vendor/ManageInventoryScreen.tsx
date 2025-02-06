@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -12,12 +12,36 @@ import {
 import { ArrowLeft, Plus, Edit2, Trash2 } from 'react-native-feather';
 import { Image } from 'expo-image';
 import type { VendorMenuItem } from '../../types/vendor';
-import { mockInventory } from '../../data/inventoryMockData';
 import { router } from 'expo-router';
+import { queryAllDocuments } from '@/lib/firebase/firestore';
+import { Collections } from '@/types/collections';
+import { MenuItem } from '@/types/shop';
 
 export default function ManageInventoryScreen() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [inventory] = useState<VendorMenuItem[]>(mockInventory);
+    const [inventory, setInventory] = useState<VendorMenuItem[]>([]);
+
+    const fetchInventory = async () => {
+        const response = await queryAllDocuments<MenuItem>(
+            Collections.MenuItems
+        );
+
+        if (!response.success || !response.data) {
+            console.error('Inventory data fetching failed', response.error);
+            return;
+        }
+
+        const vendorMenuItems = response.data.map((menuItem) => ({
+            ...menuItem,
+            stockCount: menuItem.quantity ?? 0,
+        }));
+
+        setInventory(vendorMenuItems);
+    };
+
+    useEffect(() => {
+        fetchInventory();
+    }, []);
 
     return (
         <SafeAreaView className="flex-1 bg-light">

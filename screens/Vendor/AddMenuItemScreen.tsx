@@ -149,7 +149,7 @@ export default function AddMenuItemScreen() {
                                 );
                                 setNewMenuItem((prev) => ({
                                     ...prev,
-                                    price: formattedNumber,
+                                    quantity: formattedNumber,
                                 }));
                             }
                         }}
