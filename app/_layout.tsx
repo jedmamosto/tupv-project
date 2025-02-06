@@ -4,9 +4,9 @@ import {
     ThemeProvider,
 } from '@react-navigation/native';
 import { Stack, useSegments, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { AccessibilityInfo, Platform, LayoutAnimation } from 'react-native'; // Import LayoutAnimation
 import 'react-native-reanimated';
 import '../global.css';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -16,6 +16,21 @@ import { CartProvider } from '@/contexts/CartContext';
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
+
+    useEffect(() => {
+        const checkReduceMotion = async () => {
+            const isReduceMotionEnabled =
+                await AccessibilityInfo.isReduceMotionEnabled();
+            if (Platform.OS === 'ios' && !isReduceMotionEnabled) {
+                LayoutAnimation.configureNext(
+                    LayoutAnimation.Presets.easeInEaseOut
+                );
+            }
+        };
+
+        checkReduceMotion();
+    }, []);
+
     return (
         <AuthProvider>
             <ThemeProvider
@@ -91,11 +106,9 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
         const inVendorGroup = segments[0] === '(vendor)';
 
         if (!user && !inAuthGroup) {
-            // Redirect to login if not authenticated
             router.replace('/login');
         } else if (user) {
             console.log('User role:', userRole);
-            // Only redirect if we're at the root or in the wrong role group
             if (userRole === UserRole.Customer) {
                 if (!segments.length || !inCustomerGroup) {
                     router.replace('/(customer)/home');
