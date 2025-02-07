@@ -13,7 +13,7 @@ import { ArrowLeft, Plus, Edit2, Trash2 } from 'react-native-feather';
 import { Image } from 'expo-image';
 import type { VendorMenuItem } from '../../types/vendor';
 import { router } from 'expo-router';
-import { queryAllDocuments } from '@/lib/firebase/firestore';
+import { deleteDocument, queryAllDocuments } from '@/lib/firebase/firestore';
 import { Collections } from '@/types/collections';
 import { MenuItem } from '@/types/shop';
 
@@ -42,6 +42,19 @@ export default function ManageInventoryScreen() {
     useEffect(() => {
         fetchInventory();
     }, []);
+
+    const handleDelete = async (id: string) => {
+        const response = await deleteDocument(Collections.MenuItems, id);
+
+        if (!response.success) {
+            console.log('Delete failed');
+            return;
+        }
+
+        setInventory(inventory.filter((inventory) => inventory.id !== id));
+
+        console.log('Deleted');
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-light">
@@ -119,12 +132,19 @@ export default function ManageInventoryScreen() {
                                         <View className="mt-2 flex-row">
                                             <TouchableOpacity
                                                 className="mr-2 rounded-lg bg-primary/10 p-2"
-                                                onPress={() =>
-                                                    console.log(
-                                                        'Edit item',
-                                                        item.id
-                                                    )
-                                                }
+                                                onPress={() => {
+                                                    console.log(item);
+                                                    router.push({
+                                                        pathname:
+                                                            '/(vendor)/tabs/(inventory)/edit-menu-item',
+                                                        params: {
+                                                            menuItem:
+                                                                JSON.stringify(
+                                                                    item
+                                                                ),
+                                                        },
+                                                    });
+                                                }}
                                             >
                                                 <Edit2
                                                     stroke="#3d5300"
@@ -135,9 +155,8 @@ export default function ManageInventoryScreen() {
                                             <TouchableOpacity
                                                 className="rounded-lg bg-red-100 p-2"
                                                 onPress={() =>
-                                                    console.log(
-                                                        'Delete item',
-                                                        item.id
+                                                    handleDelete(
+                                                        item.id as string
                                                     )
                                                 }
                                             >

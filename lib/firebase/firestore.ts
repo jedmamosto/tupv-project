@@ -1,5 +1,13 @@
 import { User } from '@/types/user';
-import { getDoc, doc, collection, addDoc, getDocs } from 'firebase/firestore';
+import {
+    getDoc,
+    doc,
+    collection,
+    addDoc,
+    getDocs,
+    updateDoc,
+    deleteDoc,
+} from 'firebase/firestore';
 import { db } from './config';
 
 interface FirestoreResponse<T> {
@@ -85,6 +93,48 @@ export async function queryAllDocuments<T extends object>(
                 error instanceof Error
                     ? error.message
                     : 'Unknown error occurred',
+        };
+    }
+}
+
+export async function updateDocument<T>(
+    collectionName: string,
+    documentId: string,
+    changeValue: Partial<T>
+): Promise<FirestoreResponse<T>> {
+    try {
+        const docRef = doc(db, collectionName, documentId);
+        await updateDoc(docRef, changeValue);
+        return {
+            success: true,
+        };
+    } catch (error) {
+        console.error('Failed in updating the document:', error);
+        return {
+            success: false,
+            error:
+                error instanceof Error
+                    ? error.message
+                    : 'Unknown error occurred',
+        };
+    }
+}
+
+export async function deleteDocument(
+    collectionName: string,
+    documentId: string
+) {
+    try {
+        const documentRef = doc(db, collectionName, documentId);
+        await deleteDoc(documentRef);
+        console.log('Delete completed');
+        return {
+            success: true,
+        };
+    } catch (error) {
+        console.error('Failed in deleting the document: ', error);
+        return {
+            success: false,
         };
     }
 }
