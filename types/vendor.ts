@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase/firestore';
 import { MenuItem, Shop } from './shop';
 
 export interface VendorMenuItem extends MenuItem {
@@ -15,8 +16,8 @@ export interface Order {
     total: number;
     customerName: string;
     orderNumber: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
 }
 
 export interface VendorShop extends Shop {
