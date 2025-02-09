@@ -83,6 +83,14 @@ export default function RootLayout() {
                                 name="(vendor)/tabs/scan-qr"
                                 options={{ headerShown: false }}
                             />
+                            <Stack.Screen
+                                name="(vendor)/tabs/(inventory)/add-menu-item"
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="(vendor)/tabs/(inventory)/edit-menu-item"
+                                options={{ headerShown: false }}
+                            />
                             <Stack.Screen name="+not-found" />
                         </Stack>
                         <StatusBar style="auto" />

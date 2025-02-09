@@ -1,172 +1,166 @@
+'use client';
+
+import { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams, router } from 'expo-router';
+import { Image } from 'expo-image';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { ArrowLeft } from 'react-native-feather';
 import { Button } from '@/components/custom/Button';
 import InputField from '@/components/custom/InputField';
-import { useAuth } from '@/contexts/AuthContext';
-import { updateDocument, uploadDocument } from '@/lib/firebase/firestore';
-import { MenuItem } from '@/types/shop';
-import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, View } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
-import { VendorMenuItem } from '@/types/vendor';
+import { updateDocument } from '@/lib/firebase/firestore';
 import { Collections } from '@/types/collections';
+import type { VendorMenuItem } from '@/types/vendor';
 
 export default function EditMenuItemScreen() {
     const params = useLocalSearchParams();
-    const passedItems: VendorMenuItem = JSON.parse(params.menuItem as string);
+    const passedItem: VendorMenuItem = JSON.parse(params.menuItem as string);
 
-    const [image, setImage] = useState<string | null>(null);
-    const [newMenuItem, setNewMenuItem] = useState({
-        id: passedItems.id,
-        userId: passedItems.userId,
-        name: passedItems.name,
-        price: passedItems.price,
-        image: passedItems.image,
-        isAvailable: passedItems.isAvailable ?? true,
-        quantity: passedItems.quantity,
+    const [menuItem, setMenuItem] = useState({
+        id: passedItem.id,
+        userId: passedItem.userId,
+        name: passedItem.name,
+        price: passedItem.price,
+        image: passedItem.image,
+        isAvailable: passedItem.isAvailable ?? true,
+        quantity: passedItem.quantity ?? 0,
+    });
+    const [errors, setErrors] = useState({
+        name: '',
+        price: '',
+        quantity: '',
     });
 
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
+    function validateForm() {
+        let isValid = true;
+        const newErrors = { name: '', price: '', quantity: '' };
 
-        console.log(result);
-
-        if (!result.canceled) {
-            setImage(result.assets[0].uri);
-            return result.assets[0].uri;
+        if (!menuItem.name.trim()) {
+            newErrors.name = 'Name is required';
+            isValid = false;
         }
-    };
 
-    // TODO: Sam add validations (check for inputs)
-
-    // directly call firestore operations
-    const handleEditItem = async (menuItem: MenuItem) => {
-        const editMenuItem = await updateDocument<MenuItem>(
-            Collections.MenuItems,
-            menuItem.id as string,
-            menuItem
-        );
-
-        if (!editMenuItem.success) {
-            console.log('Menu edit failed');
-        } else {
-            console.log('Edit success');
+        if (menuItem.price <= 0) {
+            newErrors.price = 'Price must be greater than 0';
+            isValid = false;
         }
-    };
 
-    const handleImageUpload = async () => {
-        const imageUri = await pickImage();
-
-        if (imageUri) {
-            console.log('Local upload complete');
+        if (menuItem.quantity < 0) {
+            newErrors.quantity = 'Quantity cannot be negative';
+            isValid = false;
         }
-    };
 
-    // create a form to put in the data
+        setErrors(newErrors);
+        return isValid;
+    }
+
+    async function handleEditItem() {
+        if (!validateForm()) return;
+
+        try {
+            const updatedMenuItem = { ...menuItem };
+            const editResult = await updateDocument(
+                Collections.MenuItems,
+                menuItem.id as string,
+                updatedMenuItem
+            );
+
+            if (editResult.success) {
+                Alert.alert('Success', 'Menu item updated successfully');
+                router.back();
+            } else {
+                Alert.alert('Error', 'Failed to update menu item');
+            }
+        } catch (error) {
+            console.error('Error updating menu item:', error);
+            Alert.alert('Error', 'An unexpected error occurred');
+        }
+    }
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
-            <ScrollView className="flex-1">
-                <View className="p-4">
-                    {image && (
-                        <Image
-                            source={{ uri: image }}
-                            style={{
-                                width: 100,
-                                height: 100,
-                                borderRadius: 8,
-                            }}
-                        />
-                    )}
-                    <Button
-                        label={'Upload an Image'}
-                        onPress={handleImageUpload}
-                    />
-                    <InputField
-                        label="Name"
-                        placeholder="The name of your menu item"
-                        onChangeText={(input) => {
-                            setNewMenuItem((prev) => ({
-                                ...prev,
-                                name: input,
-                            }));
-                        }}
-                        value={newMenuItem.name}
-                    />
-                    <InputField
-                        label="Price"
-                        placeholder="The price of your menu item"
-                        keyboardType="name-phone-pad"
-                        onChangeText={(input) => {
-                            const cleanInput = input.replace(/[^0-9.]/g, '');
-
-                            if (!cleanInput) {
-                                setNewMenuItem((prev) => ({
-                                    ...prev,
-                                    price: 0,
-                                }));
-                                return;
-                            }
-
-                            const number = parseFloat(cleanInput);
-
-                            // Only update if we have a valid number
-                            if (!isNaN(number)) {
-                                const formattedNumber = parseFloat(
-                                    number.toFixed(2)
-                                );
-                                setNewMenuItem((prev) => ({
-                                    ...prev,
-                                    price: formattedNumber,
-                                }));
-                            }
-                        }}
-                        value={newMenuItem.price.toString()}
-                    />
-                    <InputField
-                        label="Quantity"
-                        placeholder="The quantity of your menu item"
-                        keyboardType="number-pad"
-                        inputMode="numeric"
-                        onChangeText={(input) => {
-                            const cleanInput = input.replace(/[^0-9.]/g, '');
-
-                            if (!cleanInput) {
-                                setNewMenuItem((prev) => ({
-                                    ...prev,
-                                    quantity: 0,
-                                }));
-                                return;
-                            }
-
-                            const number = parseFloat(cleanInput);
-
-                            // Only update if we have a valid number
-                            if (!isNaN(number)) {
-                                const formattedNumber = parseFloat(
-                                    number.toFixed(2)
-                                );
-                                setNewMenuItem((prev) => ({
-                                    ...prev,
-                                    quantity: formattedNumber,
-                                }));
-                            }
-                        }}
-                        value={newMenuItem.quantity?.toString()}
-                    />
-                    <Button
-                        label="Create Item"
-                        onPress={() => {
-                            handleEditItem(newMenuItem);
-                        }}
-                    />
+        <SafeAreaView className="flex-1 bg-gray-100" edges={['bottom']}>
+            <View className="flex-1">
+                <LinearGradient
+                    colors={[
+                        'rgba(61, 83, 0, 0.9)',
+                        'rgba(61, 83, 0, 0.7)',
+                        'transparent',
+                    ]}
+                    className="absolute left-0 right-0 top-0 h-32"
+                />
+                <View className="mt-6 flex-row items-center justify-between p-4">
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="rounded-full bg-white/20 p-2"
+                    >
+                        <ArrowLeft stroke="#fff" width={24} height={24} />
+                    </TouchableOpacity>
+                    <Text className="text-xl font-bold text-white">
+                        Edit Menu Item
+                    </Text>
+                    <View style={{ width: 40 }} />
                 </View>
-            </ScrollView>
+
+                <ScrollView className="flex-1 px-4">
+                    <Animated.View
+                        entering={FadeInDown.delay(200).duration(500)}
+                        className="mt-4 items-center"
+                    >
+                        <Image
+                            source={{ uri: menuItem.image }}
+                            style={{
+                                width: 150,
+                                height: 150,
+                                borderRadius: 75,
+                            }}
+                            contentFit="cover"
+                        />
+                    </Animated.View>
+
+                    <Animated.View
+                        entering={FadeInDown.delay(400).duration(500)}
+                    >
+                        <InputField
+                            label="Name"
+                            placeholder="Item name"
+                            value={menuItem.name}
+                            onChangeText={(text) =>
+                                setMenuItem((prev) => ({ ...prev, name: text }))
+                            }
+                            error={errors.name}
+                        />
+                        <InputField
+                            label="Price"
+                            placeholder="Item price"
+                            keyboardType="decimal-pad"
+                            value={menuItem.price.toString()}
+                            onChangeText={(text) => {
+                                const price = Number.parseFloat(text) || 0;
+                                setMenuItem((prev) => ({ ...prev, price }));
+                            }}
+                            error={errors.price}
+                        />
+                        <InputField
+                            label="Quantity"
+                            placeholder="Available quantity"
+                            keyboardType="number-pad"
+                            value={menuItem.quantity.toString()}
+                            onChangeText={(text) => {
+                                const quantity = Number.parseInt(text) || 0;
+                                setMenuItem((prev) => ({ ...prev, quantity }));
+                            }}
+                            error={errors.quantity}
+                        />
+                        <Button
+                            label="Update Item"
+                            onPress={handleEditItem}
+                            pressableClassName="mt-6 bg-primary"
+                        />
+                    </Animated.View>
+                </ScrollView>
+            </View>
         </SafeAreaView>
     );
 }
