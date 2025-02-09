@@ -199,38 +199,6 @@ export async function queryAllDocuments<T extends object>(
     }
 }
 
-export async function queryDocument<T extends object>(
-    collectionName: string,
-    fieldName: string,
-    fieldValue: string
-): Promise<FirestoreResponse<T[]>> {
-    try {
-        const collectionRef = collection(db, collectionName);
-        const q = query(collectionRef, where(fieldName, '==', fieldValue));
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            throw new Error('No matching documents found');
-        }
-        const queryData = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        })) as T[];
-        return {
-            success: true,
-            data: queryData,
-        };
-    } catch (error) {
-        console.error('Error encountered:', error);
-        return {
-            success: false,
-            error:
-                error instanceof Error
-                    ? error.message
-                    : 'Unknown error occurred',
-        };
-    }
-}
-
 export async function updateDocument<T>(
     collectionName: string,
     documentId: string,
