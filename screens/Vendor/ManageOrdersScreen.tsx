@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -16,8 +16,10 @@ import {
     XCircle,
 } from 'react-native-feather';
 import type { Order } from '../../types/vendor';
-import { mockOrders } from '../../data/orderMockData';
 import { router } from 'expo-router';
+import { Collections } from '@/types/collections';
+import { queryAllDocuments, updateDocument } from '@/lib/firebase/firestore';
+import { MenuItem } from '@/types/shop';
 
 function getStatusColor(status: Order['status']) {
     switch (status) {
@@ -47,10 +49,75 @@ export default function ManageOrdersScreen() {
         { status: 'complete', icon: CheckCircle, label: 'Complete' },
         { status: 'cancelled', icon: XCircle, label: 'Cancelled' },
     ];
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
 
-    const filteredOrders = mockOrders.filter(
+    const fetchOrders = async () => {
+        const response = await queryAllDocuments<Order>(Collections.Orders);
+
+        if (!response.success || !response.data) {
+            console.error('Order data fetching failed', response.error);
+            return;
+        }
+
+        const orders = response.data;
+
+        setOrders(orders);
+    };
+
+    const fetchMenuItems = async () => {
+        const response = await queryAllDocuments<MenuItem>(
+            Collections.MenuItems
+        );
+
+        if (!response.success || !response.data) {
+            console.error('Inventory data fetching failed', response.error);
+            return;
+        }
+
+        const queriedMenuItems = response.data;
+
+        const orderIds = orders.flatMap((order) =>
+            order.items.map((item) => item.menuItemId)
+        );
+
+        setMenuItems(() =>
+            queriedMenuItems.filter((item) =>
+                orderIds.includes(item.id as string)
+            )
+        );
+    };
+
+    useEffect(() => {
+        fetchOrders();
+        fetchMenuItems();
+    }, []);
+
+    const filteredOrders = orders.filter(
         (order) => order.status === selectedStatus
     );
+
+    const handleOrderUpdate = async (order: Order, status: Order['status']) => {
+        const updatedOrder: Order = { ...order, status: status };
+
+        const orderUpdate = await updateDocument<Order>(
+            Collections.Orders,
+            order.id as string,
+            updatedOrder
+        );
+
+        if (!orderUpdate.success) {
+            console.log('Order status update failed');
+        } else {
+            console.log('Edit success');
+        }
+
+        setOrders((currentOrders) =>
+            currentOrders.map((currentOrder) =>
+                currentOrder.id === order.id ? updatedOrder : currentOrder
+            )
+        );
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-light">
@@ -154,20 +221,20 @@ export default function ManageOrdersScreen() {
                                     <Text className="mb-2 text-gray-600">
                                         Customer: {order.customerName}
                                     </Text>
-                                    {order.items.map((item) => (
+                                    {menuItems.map((item) => (
                                         <View
-                                            key={item.menuItem.id}
+                                            key={item.id}
                                             className="mb-1 flex-row items-center justify-between"
                                         >
                                             <Text className="text-primary">
-                                                {item.quantity}x{' '}
-                                                {item.menuItem.name}
+                                                {order.orderQuantity}x{' '}
+                                                {item.name}
                                             </Text>
                                             <Text className="text-primary">
                                                 ₱
                                                 {(
-                                                    item.menuItem.price *
-                                                    item.quantity
+                                                    item.price *
+                                                    order.orderQuantity
                                                 ).toFixed(2)}
                                             </Text>
                                         </View>
@@ -178,7 +245,7 @@ export default function ManageOrdersScreen() {
                                                 Total
                                             </Text>
                                             <Text className="font-bold text-primary">
-                                                ₱{order.total.toFixed(2)}
+                                                ₱{order.total}
                                             </Text>
                                         </View>
                                     </View>
@@ -186,12 +253,17 @@ export default function ManageOrdersScreen() {
                                         {order.status === 'received' && (
                                             <TouchableOpacity
                                                 className="mr-2 flex-1 rounded-lg bg-primary px-4 py-2"
-                                                onPress={() =>
+                                                onPress={() => {
+                                                    setSelectedStatus('ready');
+                                                    handleOrderUpdate(
+                                                        order,
+                                                        'ready'
+                                                    );
                                                     console.log(
                                                         'Mark as ready',
-                                                        order.id
-                                                    )
-                                                }
+                                                        order.id + order.status
+                                                    );
+                                                }}
                                             >
                                                 <Text className="text-center font-medium text-light">
                                                     Mark as Ready
@@ -201,12 +273,19 @@ export default function ManageOrdersScreen() {
                                         {order.status === 'ready' && (
                                             <TouchableOpacity
                                                 className="mr-2 flex-1 rounded-lg bg-primary px-4 py-2"
-                                                onPress={() =>
+                                                onPress={() => {
+                                                    setSelectedStatus(
+                                                        'complete'
+                                                    );
+                                                    handleOrderUpdate(
+                                                        order,
+                                                        'complete'
+                                                    );
                                                     console.log(
                                                         'Mark as complete',
-                                                        order.id
-                                                    )
-                                                }
+                                                        order.id + order.status
+                                                    );
+                                                }}
                                             >
                                                 <Text className="text-center font-medium text-light">
                                                     Mark as Complete
@@ -217,12 +296,19 @@ export default function ManageOrdersScreen() {
                                             order.status === 'ready') && (
                                             <TouchableOpacity
                                                 className="flex-1 rounded-lg bg-red-500 px-4 py-2"
-                                                onPress={() =>
+                                                onPress={() => {
+                                                    setSelectedStatus(
+                                                        'cancelled'
+                                                    );
+                                                    handleOrderUpdate(
+                                                        order,
+                                                        'cancelled'
+                                                    );
                                                     console.log(
                                                         'Cancel order',
-                                                        order.id
-                                                    )
-                                                }
+                                                        order.id + order.status
+                                                    );
+                                                }}
                                             >
                                                 <Text className="text-center font-medium text-light">
                                                     Cancel Order

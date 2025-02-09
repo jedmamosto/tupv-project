@@ -1,9 +1,10 @@
 export interface MenuItem {
-    id: string;
+    id?: string;
+    userId: string;
     name: string;
     price: number;
     image: any;
-    available: boolean;
+    isAvailable: boolean;
     description?: string;
     category?: string;
     quantity?: number;

@@ -8,9 +8,9 @@ export interface VendorMenuItem extends MenuItem {
 export interface Order {
     id: string;
     items: {
-        menuItem: MenuItem;
-        quantity: number;
+        menuItemId: string;
     }[];
+    orderQuantity: number;
     status: 'received' | 'ready' | 'complete' | 'cancelled';
     total: number;
     customerName: string;
