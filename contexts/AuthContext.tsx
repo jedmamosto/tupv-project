@@ -2,8 +2,10 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '@/lib/firebase/config';
 import { getUserDoc } from '@/lib/firebase/firestore';
-import { User, UserRole } from '@/types/user';
+import { User } from '@/types/user';
+import { UserRole } from '@/types/enums';
 import { onAuthStateChanged } from '@firebase/auth';
+import { Timestamp } from 'firebase/firestore';
 
 // Define the shape of our context state
 type AuthContextData = {
@@ -39,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                             email: firebaseUser.email!,
                             name: userDoc.data.name,
                             role: userDoc.data.role,
+                            createdAt: Timestamp.now(),
                         });
                     }
                 } else {

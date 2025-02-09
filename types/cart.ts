@@ -1,6 +1,7 @@
 import { Timestamp } from 'firebase/firestore';
 
 export interface CartItem {
+    id?: string;
     menuItemId: string;
     name: string;
     price: number;

@@ -19,7 +19,7 @@ import Animated, {
     useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import type { Shop, MenuItem, ProductCategory } from '@/types/shop';
+import type { Shop, MenuItem } from '@/types/shop';
 import { mockShops } from '@/data/mockData';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,10 +27,8 @@ import { useCart } from '@/contexts/CartContext';
 
 function ShopScreen() {
     const [shop, setShop] = useState<Shop | null>(null);
+    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(
-        null
-    );
     const { shopId } = useLocalSearchParams<{ shopId: string }>();
     const insets = useSafeAreaInsets();
     const { cartItems, addToCart } = useCart();
@@ -59,12 +57,28 @@ function ShopScreen() {
     }));
 
     useEffect(() => {
-        function fetchShop() {
+        async function fetchShop() {
+            // In a real app, you would fetch these from Firebase
+            // This is just for mock data
             setTimeout(() => {
                 const foundShop = mockShops.find((s) => s.id === shopId);
                 if (foundShop) {
                     setShop(foundShop);
-                    setSelectedCategory(foundShop.categories?.[0]?.id || null);
+                    // Mock fetching menu items using the IDs
+                    // In real app, you would fetch these from Firebase
+                    const mockMenuItems: MenuItem[] = foundShop.menuItems.map(
+                        (id) => ({
+                            id,
+                            vendorId: foundShop.vendorId,
+                            name: `Item ${id}`,
+                            price: 100,
+                            image: null,
+                            isAvailable: true,
+                            description: 'Sample description',
+                            stockCount: 10,
+                        })
+                    );
+                    setMenuItems(mockMenuItems);
                 }
                 setLoading(false);
             }, 1000);
@@ -73,6 +87,8 @@ function ShopScreen() {
     }, [shopId]);
 
     function handleAddToCart(item: MenuItem) {
+        if (!item.isAvailable || item.stockCount === 0) return;
+
         addToCart(item);
         cartBadgeScale.value = withSpring(1.2, {}, () => {
             cartBadgeScale.value = withSpring(1);
@@ -143,7 +159,7 @@ function ShopScreen() {
                         numberOfLines={1}
                         className="ml-4 flex-1 text-base font-bold text-white"
                     >
-                        {shop?.name}
+                        {shop.name}
                     </Text>
                     <TouchableOpacity
                         onPress={handleGoToCart}
@@ -177,77 +193,68 @@ function ShopScreen() {
                     />
                 </Animated.View>
 
-                <Animated.ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    className="px-4 py-4"
-                    entering={FadeInRight.delay(300)}
-                >
-                    {shop.categories?.map((category: ProductCategory) => (
-                        <TouchableOpacity
-                            key={category.id}
-                            onPress={() => setSelectedCategory(category.id)}
-                            className={`mr-2 rounded-full px-4 py-2 ${
-                                selectedCategory === category.id
-                                    ? 'bg-green-800'
-                                    : 'bg-gray-300'
-                            }`}
-                        >
-                            <Text
-                                className={`${
-                                    selectedCategory === category.id
-                                        ? 'text-white'
-                                        : 'text-gray-800'
-                                } font-semibold`}
-                            >
-                                {category.name}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </Animated.ScrollView>
-
                 <View className="p-4">
-                    {shop.menuItems
-                        .filter((item) => item.category === selectedCategory)
-                        .map((item, index) => (
-                            <Animated.View
-                                key={item.id}
-                                entering={FadeInDown.delay(
-                                    index * 100
-                                ).springify()}
-                                className="mx-0 mb-4 flex-row overflow-hidden rounded-xl bg-white p-4 shadow-sm"
+                    {menuItems.map((item, index) => (
+                        <Animated.View
+                            key={item.id}
+                            entering={FadeInDown.delay(index * 100).springify()}
+                            className="mx-0 mb-4 flex-row overflow-hidden rounded-xl bg-white p-4 shadow-sm"
+                        >
+                            <Image
+                                source={item.image}
+                                style={{
+                                    width: 80,
+                                    height: 80,
+                                    borderRadius: 8,
+                                }}
+                                className="mr-4 rounded-lg"
+                                contentFit="cover"
+                            />
+                            <View className="ml-2 flex-1">
+                                <Text className="text-lg font-semibold text-green-800">
+                                    {item.name}
+                                </Text>
+                                <Text className="text-gray-600">
+                                    {item.description}
+                                </Text>
+                                <Text className="mt-2 font-bold text-green-800">
+                                    ₱{item.price.toFixed(2)}
+                                </Text>
+                                {!item.isAvailable && (
+                                    <Text className="text-red-500">
+                                        Currently Unavailable
+                                    </Text>
+                                )}
+                                {item.isAvailable && item.stockCount === 0 && (
+                                    <Text className="text-red-500">
+                                        Out of Stock
+                                    </Text>
+                                )}
+                                {item.isAvailable &&
+                                    item.stockCount > 0 &&
+                                    item.stockCount <= 5 && (
+                                        <Text className="text-orange-500">
+                                            Only {item.stockCount} left
+                                        </Text>
+                                    )}
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => handleAddToCart(item)}
+                                disabled={
+                                    !item.isAvailable || item.stockCount === 0
+                                }
+                                className={`self-end rounded-lg px-3 py-2 ${
+                                    !item.isAvailable || item.stockCount === 0
+                                        ? 'bg-gray-400'
+                                        : 'bg-green-800'
+                                }`}
                             >
-                                <Image
-                                    source={item.image}
-                                    style={{
-                                        width: 80,
-                                        height: 80,
-                                        borderRadius: 8,
-                                    }}
-                                    className="mr-4 rounded-lg"
-                                    contentFit="cover"
-                                />
-                                <View className="ml-2 flex-1">
-                                    <Text className="text-lg font-semibold text-green-800">
-                                        {item.name}
-                                    </Text>
-                                    <Text className="text-gray-600">
-                                        {item.description}
-                                    </Text>
-                                    <Text className="mt-2 font-bold text-green-800">
-                                        ₱{item.price.toFixed(2)}
-                                    </Text>
-                                </View>
-                                <TouchableOpacity
-                                    onPress={() => handleAddToCart(item)}
-                                    className="self-end rounded-lg bg-green-800 px-3 py-2"
-                                >
-                                    <Text className="font-semibold text-white">
-                                        Add
-                                    </Text>
-                                </TouchableOpacity>
-                            </Animated.View>
-                        ))}
+                                <Text className="font-semibold text-white">
+                                    Add
+                                </Text>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    ))}
                 </View>
             </Animated.ScrollView>
         </SafeAreaView>
