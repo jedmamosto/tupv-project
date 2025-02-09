@@ -19,8 +19,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CartItem } from '@/types/cart';
-import { router, useLocalSearchParams } from 'expo-router';
+import { ExternalPathString, router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import generateCheckoutLink from '@/data/paymongo/generateCheckoutLink';
+import { queryAllDocuments } from '@/lib/firebase/firestore';
+import { Collections } from '@/types/collections';
 
 function CheckoutScreen() {
     const [loading, setLoading] = useState(false);
@@ -55,7 +58,7 @@ function CheckoutScreen() {
         }
 
         setLoading(true);
-        setTimeout(() => {
+        setTimeout(async () => {
             setLoading(false);
             if (selectedPayment === 'counter') {
                 router.push({
@@ -63,10 +66,29 @@ function CheckoutScreen() {
                     params: { orderId: '123456' },
                 });
             } else {
-                router.push({
-                    pathname: '/(customer)/payment-gateway',
-                    params: { orderId: '123456' },
-                });
+                // Change this lou
+                const testVendorId = 'p5DvsJ7HMhTdtRUyL1e76egpenG3';
+                const testCustomerId = 'DjwwLEdfdbbN1CpjmhE4VNpqURH2';
+                const testCartId = 'DTLAA0qE2Wns9pwNl10d';
+
+                const checkoutLink = await generateCheckoutLink(
+                    testVendorId,
+                    testCustomerId,
+                    testCartId
+                );
+
+                if (checkoutLink.success && checkoutLink.checkoutUrl) {
+                    console.log('Checkout link:', checkoutLink.checkoutUrl);
+                    router.push({
+                        pathname:
+                            checkoutLink.checkoutUrl as ExternalPathString,
+                    });
+                } else {
+                    router.push({
+                        pathname:
+                            '/(customer)/order-fail' as ExternalPathString,
+                    });
+                }
             }
         }, 2000);
     }
