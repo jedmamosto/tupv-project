@@ -12,13 +12,13 @@ export default function AddMenuItemScreen() {
     const { user } = useAuth();
 
     const [image, setImage] = useState<string | null>(null);
-    const [newMenuItem, setNewMenuItem] = useState({
-        userId: user?.id as string,
+    const [newMenuItem, setNewMenuItem] = useState<MenuItem>({
+        vendorId: user?.id as string,
         name: '',
         price: 0,
         image: '',
         isAvailable: true,
-        quantity: 0,
+        stockCount: 0,
     });
 
     const pickImage = async () => {
@@ -125,8 +125,8 @@ export default function AddMenuItemScreen() {
                         value={newMenuItem.price.toString()}
                     />
                     <InputField
-                        label="Quantity"
-                        placeholder="The quantity of your menu item"
+                        label="Stock Count"
+                        placeholder="The stock count of your menu item"
                         keyboardType="number-pad"
                         inputMode="numeric"
                         onChangeText={(input) => {
@@ -135,7 +135,7 @@ export default function AddMenuItemScreen() {
                             if (!cleanInput) {
                                 setNewMenuItem((prev) => ({
                                     ...prev,
-                                    quantity: 0,
+                                    stockCount: 0,
                                 }));
                                 return;
                             }
@@ -149,11 +149,11 @@ export default function AddMenuItemScreen() {
                                 );
                                 setNewMenuItem((prev) => ({
                                     ...prev,
-                                    quantity: formattedNumber,
+                                    stockCount: formattedNumber,
                                 }));
                             }
                         }}
-                        value={newMenuItem.quantity?.toString()}
+                        value={newMenuItem.stockCount?.toString()}
                     />
                     <Button
                         label="Create Item"

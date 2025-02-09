@@ -1,29 +1,27 @@
 import { Button } from '@/components/custom/Button';
 import InputField from '@/components/custom/InputField';
-import { useAuth } from '@/contexts/AuthContext';
-import { updateDocument, uploadDocument } from '@/lib/firebase/firestore';
+import { updateDocument } from '@/lib/firebase/firestore';
 import { MenuItem } from '@/types/shop';
 import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
-import { VendorMenuItem } from '@/types/vendor';
 import { Collections } from '@/types/collections';
 
 export default function EditMenuItemScreen() {
     const params = useLocalSearchParams();
-    const passedItems: VendorMenuItem = JSON.parse(params.menuItem as string);
+    const passedItems: MenuItem = JSON.parse(params.menuItem as string);
 
     const [image, setImage] = useState<string | null>(null);
-    const [newMenuItem, setNewMenuItem] = useState({
+    const [newMenuItem, setNewMenuItem] = useState<MenuItem>({
         id: passedItems.id,
-        userId: passedItems.userId,
+        vendorId: passedItems.vendorId,
         name: passedItems.name,
         price: passedItems.price,
         image: passedItems.image,
         isAvailable: passedItems.isAvailable ?? true,
-        quantity: passedItems.quantity,
+        stockCount: passedItems.stockCount ?? 0,
     });
 
     const pickImage = async () => {
@@ -129,8 +127,8 @@ export default function EditMenuItemScreen() {
                         value={newMenuItem.price.toString()}
                     />
                     <InputField
-                        label="Quantity"
-                        placeholder="The quantity of your menu item"
+                        label="Stock Count"
+                        placeholder="The stock count of your menu item"
                         keyboardType="number-pad"
                         inputMode="numeric"
                         onChangeText={(input) => {
@@ -139,7 +137,7 @@ export default function EditMenuItemScreen() {
                             if (!cleanInput) {
                                 setNewMenuItem((prev) => ({
                                     ...prev,
-                                    quantity: 0,
+                                    stockCount: 0,
                                 }));
                                 return;
                             }
@@ -153,11 +151,11 @@ export default function EditMenuItemScreen() {
                                 );
                                 setNewMenuItem((prev) => ({
                                     ...prev,
-                                    quantity: formattedNumber,
+                                    stockCount: formattedNumber,
                                 }));
                             }
                         }}
-                        value={newMenuItem.quantity?.toString()}
+                        value={newMenuItem.stockCount?.toString()}
                     />
                     <Button
                         label="Create Item"

@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { ArrowLeft, Plus, Edit2, Trash2 } from 'react-native-feather';
 import { Image } from 'expo-image';
-import type { VendorMenuItem } from '../../types/vendor';
 import { router } from 'expo-router';
 import { deleteDocument, queryAllDocuments } from '@/lib/firebase/firestore';
 import { Collections } from '@/types/collections';
@@ -19,7 +18,7 @@ import { MenuItem } from '@/types/shop';
 
 export default function ManageInventoryScreen() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [inventory, setInventory] = useState<VendorMenuItem[]>([]);
+    const [inventory, setInventory] = useState<MenuItem[]>([]);
 
     const fetchInventory = async () => {
         const response = await queryAllDocuments<MenuItem>(
@@ -33,7 +32,7 @@ export default function ManageInventoryScreen() {
 
         const vendorMenuItems = response.data.map((menuItem) => ({
             ...menuItem,
-            stockCount: menuItem.quantity ?? 0,
+            stockCount: menuItem.stockCount ?? 0,
         }));
 
         setInventory(vendorMenuItems);
