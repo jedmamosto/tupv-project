@@ -96,7 +96,7 @@ export default function ManageInventoryScreen() {
                         right: 0,
                         top: 0,
                         zIndex: 10,
-                        marginTop: 20,
+                        marginTop: 30,
                     },
                 ]}
             >

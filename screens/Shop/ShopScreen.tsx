@@ -24,6 +24,8 @@ import { mockShops } from '@/data/mockData';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCart } from '@/contexts/CartContext';
+import { queryAllDocuments } from '@/lib/firebase/firestore';
+import { Collections } from '@/types/collections';
 
 function ShopScreen() {
     const [shop, setShop] = useState<Shop | null>(null);
@@ -60,25 +62,24 @@ function ShopScreen() {
         async function fetchShop() {
             // In a real app, you would fetch these from Firebase
             // This is just for mock data
-            setTimeout(() => {
-                const foundShop = mockShops.find((s) => s.id === shopId);
+            setTimeout(async () => {
+                const shopQuery = await queryAllDocuments(Collections.Shops);
+                const shops = shopQuery.data as Shop[];
+                const foundShop = shops.find((s) => s.id === shopId);
+
+                console.log(foundShop);
                 if (foundShop) {
+                    const menuItemsQuery = await queryAllDocuments(
+                        Collections.MenuItems
+                    );
+                    const menuItems = menuItemsQuery.data as MenuItem[];
+                    const filteredItems = menuItems.filter((item) =>
+                        foundShop.menuItems.includes(item.id as string)
+                    );
                     setShop(foundShop);
                     // Mock fetching menu items using the IDs
                     // In real app, you would fetch these from Firebase
-                    const mockMenuItems: MenuItem[] = foundShop.menuItems.map(
-                        (id) => ({
-                            id,
-                            vendorId: foundShop.vendorId,
-                            name: `Item ${id}`,
-                            price: 100,
-                            image: null,
-                            isAvailable: true,
-                            description: 'Sample description',
-                            stockCount: 10,
-                        })
-                    );
-                    setMenuItems(mockMenuItems);
+                    setMenuItems(filteredItems);
                 }
                 setLoading(false);
             }, 1000);

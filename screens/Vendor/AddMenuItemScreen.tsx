@@ -10,9 +10,13 @@ import { ArrowLeft } from 'react-native-feather';
 import { Button } from '@/components/custom/Button';
 import InputField from '@/components/custom/InputField';
 import { useAuth } from '@/contexts/AuthContext';
-import { uploadDocument } from '@/lib/firebase/firestore';
+import {
+    queryDocument,
+    updateDocument,
+    uploadDocument,
+} from '@/lib/firebase/firestore';
 import { Collections } from '@/types/collections';
-import type { MenuItem } from '@/types/shop';
+import type { MenuItem, Shop } from '@/types/shop';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 
@@ -77,6 +81,31 @@ export default function AddMenuItemScreen() {
                 Collections.MenuItems,
                 menuItem
             );
+            const queryShop = await queryDocument<Shop>(
+                Collections.Shops,
+                'vendorId',
+                user?.id as string
+            );
+
+            if (
+                queryShop.success &&
+                queryShop.data &&
+                createResult.success &&
+                createResult.data
+            ) {
+                const updatedMenuItems = [
+                    ...(queryShop.data[0].menuItems || []),
+                    createResult?.docId || '',
+                ];
+                await updateDocument<Shop>(
+                    Collections.Shops,
+                    queryShop.data[0].id,
+                    {
+                        menuItems: updatedMenuItems,
+                    }
+                );
+            }
+
             if (createResult.success) {
                 Alert.alert('Success', 'Menu item added successfully');
                 router.back();
