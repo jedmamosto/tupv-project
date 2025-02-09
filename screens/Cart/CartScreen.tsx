@@ -132,7 +132,7 @@ function CartScreen() {
                             <TouchableOpacity
                                 onPress={() =>
                                     updateQuantity(
-                                        item.id,
+                                        item.id as string,
                                         (item.quantity || 0) - 1
                                     )
                                 }
@@ -150,7 +150,7 @@ function CartScreen() {
                             <TouchableOpacity
                                 onPress={() =>
                                     updateQuantity(
-                                        item.id,
+                                        item.id as string,
                                         (item.quantity || 0) + 1
                                     )
                                 }
@@ -159,7 +159,9 @@ function CartScreen() {
                                 <Plus stroke="#3d5300" width={24} height={24} />
                             </TouchableOpacity>
                             <TouchableOpacity
-                                onPress={() => removeFromCart(item.id)}
+                                onPress={() =>
+                                    removeFromCart(item.id as string)
+                                }
                                 className="ml-4 p-2"
                             >
                                 <Trash2
