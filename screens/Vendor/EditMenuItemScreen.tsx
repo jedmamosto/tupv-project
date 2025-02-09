@@ -12,43 +12,57 @@ import { Button } from '@/components/custom/Button';
 import InputField from '@/components/custom/InputField';
 import { updateDocument } from '@/lib/firebase/firestore';
 import { Collections } from '@/types/collections';
-import type { VendorMenuItem } from '@/types/vendor';
+import type { MenuItem } from '@/types/shop';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function EditMenuItemScreen() {
     const params = useLocalSearchParams();
-    const passedItem: VendorMenuItem = JSON.parse(params.menuItem as string);
+    const passedItem: MenuItem = JSON.parse(params.menuItem as string);
 
-    const [menuItem, setMenuItem] = useState({
+    const [image, setImage] = useState<string | null>(null);
+    const [menuItem, setMenuItem] = useState<MenuItem>({
         id: passedItem.id,
-        userId: passedItem.userId,
+        vendorId: passedItem.vendorId,
         name: passedItem.name,
         price: passedItem.price,
         image: passedItem.image,
         isAvailable: passedItem.isAvailable ?? true,
-        quantity: passedItem.quantity ?? 0,
+        stockCount: passedItem.stockCount ?? 0,
     });
     const [errors, setErrors] = useState({
         name: '',
         price: '',
-        quantity: '',
+        stockCount: '',
     });
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setImage(result.assets[0].uri);
+            setMenuItem((prev) => ({ ...prev, image: result.assets[0].uri }));
+        }
+    };
 
     function validateForm() {
         let isValid = true;
-        const newErrors = { name: '', price: '', quantity: '' };
+        const newErrors = { name: '', price: '', stockCount: '' };
 
         if (!menuItem.name.trim()) {
             newErrors.name = 'Name is required';
             isValid = false;
         }
-
         if (menuItem.price <= 0) {
             newErrors.price = 'Price must be greater than 0';
             isValid = false;
         }
-
-        if (menuItem.quantity < 0) {
-            newErrors.quantity = 'Quantity cannot be negative';
+        if (menuItem.stockCount < 0) {
+            newErrors.stockCount = 'Stock count cannot be negative';
             isValid = false;
         }
 
@@ -60,13 +74,11 @@ export default function EditMenuItemScreen() {
         if (!validateForm()) return;
 
         try {
-            const updatedMenuItem = { ...menuItem };
             const editResult = await updateDocument(
                 Collections.MenuItems,
                 menuItem.id as string,
-                updatedMenuItem
+                menuItem
             );
-
             if (editResult.success) {
                 Alert.alert('Success', 'Menu item updated successfully');
                 router.back();
@@ -108,20 +120,21 @@ export default function EditMenuItemScreen() {
                         entering={FadeInDown.delay(200).duration(500)}
                         className="mt-4 items-center"
                     >
-                        <Image
-                            source={{ uri: menuItem.image }}
-                            style={{
-                                width: 150,
-                                height: 150,
-                                borderRadius: 75,
-                            }}
-                            contentFit="cover"
-                        />
+                        {image && (
+                            <Image
+                                source={{ uri: image }}
+                                style={{
+                                    width: 150,
+                                    height: 150,
+                                    borderRadius: 8,
+                                }}
+                            />
+                        )}
                     </Animated.View>
-
                     <Animated.View
                         entering={FadeInDown.delay(400).duration(500)}
                     >
+                        <Button label={'Upload an Image'} onPress={pickImage} />
                         <InputField
                             label="Name"
                             placeholder="Item name"
@@ -136,22 +149,26 @@ export default function EditMenuItemScreen() {
                             placeholder="Item price"
                             keyboardType="decimal-pad"
                             value={menuItem.price.toString()}
-                            onChangeText={(text) => {
-                                const price = Number.parseFloat(text) || 0;
-                                setMenuItem((prev) => ({ ...prev, price }));
-                            }}
+                            onChangeText={(text) =>
+                                setMenuItem((prev) => ({
+                                    ...prev,
+                                    price: parseFloat(text) || 0,
+                                }))
+                            }
                             error={errors.price}
                         />
                         <InputField
-                            label="Quantity"
-                            placeholder="Available quantity"
+                            label="Stock Count"
+                            placeholder="Available stock count"
                             keyboardType="number-pad"
-                            value={menuItem.quantity.toString()}
-                            onChangeText={(text) => {
-                                const quantity = Number.parseInt(text) || 0;
-                                setMenuItem((prev) => ({ ...prev, quantity }));
-                            }}
-                            error={errors.quantity}
+                            value={menuItem.stockCount.toString()}
+                            onChangeText={(text) =>
+                                setMenuItem((prev) => ({
+                                    ...prev,
+                                    stockCount: parseInt(text) || 0,
+                                }))
+                            }
+                            error={errors.stockCount}
                         />
                         <Button
                             label="Update Item"

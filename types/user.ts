@@ -1,4 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
+import { UserRole } from './enums';
 
 export interface User {
     id: string;
@@ -6,10 +7,5 @@ export interface User {
     name: string;
     email: string;
     role: UserRole;
-    createdAt?: Timestamp;
-}
-
-export enum UserRole {
-    Customer = 'customer',
-    Vendor = 'vendor',
+    createdAt: Timestamp;
 }

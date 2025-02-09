@@ -11,7 +11,7 @@ import 'react-native-reanimated';
 import '../global.css';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { UserRole } from '@/types/user';
+import { UserRole } from '@/types/enums';
 import { CartProvider } from '@/contexts/CartContext';
 
 export default function RootLayout() {

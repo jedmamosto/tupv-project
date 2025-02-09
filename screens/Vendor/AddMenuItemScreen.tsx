@@ -13,40 +13,55 @@ import { useAuth } from '@/contexts/AuthContext';
 import { uploadDocument } from '@/lib/firebase/firestore';
 import { Collections } from '@/types/collections';
 import type { MenuItem } from '@/types/shop';
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'expo-image';
 
 export default function AddMenuItemScreen() {
     const { user } = useAuth();
 
-    const [menuItem, setMenuItem] = useState({
-        userId: user?.id as string,
+    const [image, setImage] = useState<string | null>(null);
+    const [menuItem, setMenuItem] = useState<MenuItem>({
+        vendorId: user?.id as string,
         name: '',
         price: 0,
         image: '',
         isAvailable: true,
-        quantity: 0,
+        stockCount: 0,
     });
     const [errors, setErrors] = useState({
         name: '',
         price: '',
-        quantity: '',
+        stockCount: '',
     });
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setImage(result.assets[0].uri);
+            setMenuItem((prev) => ({ ...prev, image: result.assets[0].uri }));
+        }
+    };
 
     function validateForm() {
         let isValid = true;
-        const newErrors = { name: '', price: '', quantity: '' };
+        const newErrors = { name: '', price: '', stockCount: '' };
 
         if (!menuItem.name.trim()) {
             newErrors.name = 'Name is required';
             isValid = false;
         }
-
         if (menuItem.price <= 0) {
             newErrors.price = 'Price must be greater than 0';
             isValid = false;
         }
-
-        if (menuItem.quantity < 0) {
-            newErrors.quantity = 'Quantity cannot be negative';
+        if (menuItem.stockCount < 0) {
+            newErrors.stockCount = 'Stock count cannot be negative';
             isValid = false;
         }
 
@@ -58,12 +73,10 @@ export default function AddMenuItemScreen() {
         if (!validateForm()) return;
 
         try {
-            const newMenuItem = { ...menuItem };
             const createResult = await uploadDocument<MenuItem>(
                 Collections.MenuItems,
-                newMenuItem
+                menuItem
             );
-
             if (createResult.success) {
                 Alert.alert('Success', 'Menu item added successfully');
                 router.back();
@@ -104,6 +117,19 @@ export default function AddMenuItemScreen() {
                     <Animated.View
                         entering={FadeInDown.delay(400).duration(500)}
                     >
+                        {image && (
+                            <Image
+                                source={{ uri: image }}
+                                style={{
+                                    width: 100,
+                                    height: 100,
+                                    borderRadius: 8,
+                                    alignSelf: 'center',
+                                    marginBottom: 10,
+                                }}
+                            />
+                        )}
+                        <Button label={'Upload an Image'} onPress={pickImage} />
                         <InputField
                             label="Name"
                             placeholder="Item name"
@@ -118,22 +144,26 @@ export default function AddMenuItemScreen() {
                             placeholder="Item price"
                             keyboardType="decimal-pad"
                             value={menuItem.price.toString()}
-                            onChangeText={(text) => {
-                                const price = Number.parseFloat(text) || 0;
-                                setMenuItem((prev) => ({ ...prev, price }));
-                            }}
+                            onChangeText={(text) =>
+                                setMenuItem((prev) => ({
+                                    ...prev,
+                                    price: parseFloat(text) || 0,
+                                }))
+                            }
                             error={errors.price}
                         />
                         <InputField
-                            label="Quantity"
-                            placeholder="Available quantity"
+                            label="Stock Count"
+                            placeholder="Available stock count"
                             keyboardType="number-pad"
-                            value={menuItem.quantity.toString()}
-                            onChangeText={(text) => {
-                                const quantity = Number.parseInt(text) || 0;
-                                setMenuItem((prev) => ({ ...prev, quantity }));
-                            }}
-                            error={errors.quantity}
+                            value={menuItem.stockCount.toString()}
+                            onChangeText={(text) =>
+                                setMenuItem((prev) => ({
+                                    ...prev,
+                                    stockCount: parseInt(text) || 0,
+                                }))
+                            }
+                            error={errors.stockCount}
                         />
                         <Button
                             label="Add Item"

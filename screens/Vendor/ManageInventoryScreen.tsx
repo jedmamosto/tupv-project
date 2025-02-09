@@ -8,6 +8,7 @@ import {
     TextInput,
     StatusBar,
     RefreshControl,
+    ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Plus, Edit2, Trash2 } from 'react-native-feather';
@@ -23,14 +24,13 @@ import { router } from 'expo-router';
 import { deleteDocument, queryAllDocuments } from '@/lib/firebase/firestore';
 import { Collections } from '@/types/collections';
 import type { MenuItem } from '@/types/shop';
-import type { VendorMenuItem } from '@/types/vendor';
 
 const AnimatedTouchableOpacity =
     Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function ManageInventoryScreen() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [inventory, setInventory] = useState<VendorMenuItem[]>([]);
+    const [inventory, setInventory] = useState<MenuItem[]>([]);
     const [refreshing, setRefreshing] = useState(false);
 
     const scrollY = useSharedValue(0);
@@ -46,12 +46,7 @@ export default function ManageInventoryScreen() {
             return;
         }
 
-        const vendorMenuItems = response.data.map((menuItem) => ({
-            ...menuItem,
-            stockCount: menuItem.quantity ?? 0,
-        }));
-
-        setInventory(vendorMenuItems);
+        setInventory(response.data);
     }, []);
 
     useEffect(() => {
@@ -177,7 +172,7 @@ export default function ManageInventoryScreen() {
                     >
                         <View className="relative flex-row p-4">
                             <Image
-                                source={item.image}
+                                source={{ uri: item.image }}
                                 style={{
                                     width: 120,
                                     height: 120,
@@ -196,48 +191,6 @@ export default function ManageInventoryScreen() {
                                 <Text className="text-gray-600">
                                     Stock: {item.stockCount}
                                 </Text>
-                                <View className="mt-2 flex-row">
-                                    <TouchableOpacity
-                                        className="mr-2 rounded-lg bg-primary/10 p-2"
-                                        onPress={() => {
-                                            router.push({
-                                                pathname:
-                                                    '/(vendor)/tabs/(inventory)/edit-menu-item',
-                                                params: {
-                                                    menuItem:
-                                                        JSON.stringify(item),
-                                                },
-                                            });
-                                        }}
-                                    >
-                                        <Edit2
-                                            stroke="#3d5300"
-                                            width={20}
-                                            height={20}
-                                        />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        className="rounded-lg bg-red-100 p-2"
-                                        onPress={() =>
-                                            handleDelete(item.id as string)
-                                        }
-                                    >
-                                        <Trash2
-                                            stroke="#dc2626"
-                                            width={20}
-                                            height={20}
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                            <View className="absolute right-4 top-4">
-                                <View className="rounded-full bg-green-100 px-3 py-1">
-                                    <Text className="text-sm text-green-800">
-                                        {item.isAvailable
-                                            ? 'Available'
-                                            : 'Unavailable'}
-                                    </Text>
-                                </View>
                             </View>
                         </View>
                     </Animated.View>
