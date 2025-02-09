@@ -60,35 +60,15 @@ function CheckoutScreen() {
         setLoading(true);
         setTimeout(async () => {
             setLoading(false);
+            // change payment method of the order depending on selected payment
             if (selectedPayment === 'counter') {
                 router.push({
-                    pathname: '/(customer)/order-success',
-                    params: { orderId: '123456' },
+                    pathname: '/(customer)/order-details',
                 });
             } else {
-                // Change this lou
-                const testVendorId = 'p5DvsJ7HMhTdtRUyL1e76egpenG3';
-                const testCustomerId = 'DjwwLEdfdbbN1CpjmhE4VNpqURH2';
-                const testCartId = 'DTLAA0qE2Wns9pwNl10d';
-
-                const checkoutLink = await generateCheckoutLink(
-                    testVendorId,
-                    testCustomerId,
-                    testCartId
-                );
-
-                if (checkoutLink.success && checkoutLink.checkoutUrl) {
-                    console.log('Checkout link:', checkoutLink.checkoutUrl);
-                    router.push({
-                        pathname:
-                            checkoutLink.checkoutUrl as ExternalPathString,
-                    });
-                } else {
-                    router.push({
-                        pathname:
-                            '/(customer)/order-fail' as ExternalPathString,
-                    });
-                }
+                router.push({
+                    pathname: '/(customer)/order-details',
+                });
             }
         }, 2000);
     }
