@@ -4,7 +4,7 @@ import { Cart, CartItem } from '@/types/cart';
 import { Collections } from '@/types/collections';
 import { Order, OrderItem } from '@/types/order';
 import { User } from '@/types/user';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, Timestamp } from 'firebase/firestore';
 
 interface PaymongoCheckoutResponse {
     success: boolean;
@@ -48,6 +48,47 @@ export default async function generateCheckoutLink(
         );
 
         const cartData: Cart = fetchCartData.data as Cart;
+
+        const sampleCart: Cart = {
+            id: 'cart123',
+            userId: 'user456',
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        };
+
+        // Sample items subcollection data (as it would appear in Firebase)
+        const sampleCartItems = [
+            {
+                menuItemId: 'menu789',
+                name: 'Sisig',
+                price: 150,
+                quantity: 2,
+            },
+            {
+                menuItemId: 'menu101',
+                name: 'Beef Sinigang',
+                price: 200,
+                quantity: 1,
+            },
+        ];
+
+        // Sample line items (after transformation)
+        const sampleLineItems = [
+            {
+                currency: 'PHP',
+                amount: 15000, // 150 * 100
+                description: 'No description provided',
+                name: 'Sisig',
+                quantity: 2,
+            },
+            {
+                currency: 'PHP',
+                amount: 20000, // 200 * 100
+                description: 'No description provided',
+                name: 'Beef Sinigang',
+                quantity: 1,
+            },
+        ];
 
         // Then fetch the items subcollection
         const itemsCollectionRef = collection(
@@ -93,14 +134,14 @@ export default async function generateCheckoutLink(
                     data: {
                         attributes: {
                             billing: {
-                                email: customerUserData.email,
-                                name: customerUserData.name,
+                                email: 'sampleEmail@email.com',
+                                name: 'sample user',
                             },
                             send_email_receipt: false,
                             show_description: true,
                             show_line_items: true,
                             description: 'No description provided',
-                            line_items: lineItems,
+                            line_items: sampleLineItems,
                             payment_method_types: [
                                 'qrph',
                                 'billease',

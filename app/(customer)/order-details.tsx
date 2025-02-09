@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import generateCheckoutLink from '@/data/paymongo/generateCheckoutLink';
 import { Order, OrderItem } from '@/types/order';
 import { OrderStatus, PaymentMethod, PaymentStatus } from '@/types/enums';
+import { Timestamp } from '@firebase/firestore';
 
 export default function OrderDetails() {
     const [loading, setLoading] = useState(false);
@@ -70,8 +71,10 @@ export default function OrderDetails() {
             setLoading(true);
 
             try {
+                const testShopId = '3kuQQ4D8VDWRFK5AX2yxUhZ6so63';
+
                 const checkoutLink = await generateCheckoutLink(
-                    shopId,
+                    testShopId,
                     userId,
                     id
                 );
