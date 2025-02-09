@@ -95,13 +95,7 @@ export default function VendorDashboardScreen() {
                 className={`flex-1 ${Platform.OS === 'android' ? 'mt-8' : ''}`}
             >
                 {/* Header */}
-                <View className="flex-row items-center bg-primary px-4 py-4">
-                    <TouchableOpacity
-                        onPress={() => router.back()}
-                        className="mr-4"
-                    >
-                        <ArrowLeft stroke="#fff" width={24} height={24} />
-                    </TouchableOpacity>
+                <View className="flex-row items-center justify-center bg-primary px-4 py-4">
                     <Text className="text-xl font-bold text-white">
                         Vendor Dashboard
                     </Text>
@@ -171,7 +165,7 @@ export default function VendorDashboardScreen() {
                                     >
                                         <Text className="text-primary">
                                             {/* Display quantity and name */}
-                                            {menuItemDetails?.quantity}x{' '}
+                                            {menuItemDetails?.stockCount}x{' '}
                                             {menuItemDetails?.name}
                                         </Text>
                                         <Text className="font-medium text-primary">
@@ -198,7 +192,7 @@ export default function VendorDashboardScreen() {
                             })}
                         </TouchableOpacity>
                     </View>
-                    <View className="mt-16">
+                    <View className="mb-8 mt-auto">
                         {user ? (
                             <Button
                                 pressableClassName="w-fit px-4"

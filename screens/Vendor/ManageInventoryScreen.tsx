@@ -8,7 +8,7 @@ import {
     TextInput,
     StatusBar,
     RefreshControl,
-    ScrollView,
+    Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Plus, Edit2, Trash2 } from 'react-native-feather';
@@ -47,7 +47,12 @@ export default function ManageInventoryScreen() {
             return;
         }
 
-        setInventory(response.data);
+        const vendorMenuItems = response.data.map((menuItem) => ({
+            ...menuItem,
+            stockCount: menuItem.stockCount ?? 0,
+        }));
+
+        setInventory(vendorMenuItems);
     }, []);
 
     useEffect(() => {
@@ -68,6 +73,7 @@ export default function ManageInventoryScreen() {
         }
 
         setInventory(inventory.filter((item) => item.id !== id));
+        console.log('Deleted');
     }
 
     const headerStyle = useAnimatedStyle(() => ({
@@ -85,7 +91,7 @@ export default function ManageInventoryScreen() {
     });
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-100">
+        <SafeAreaView className="flex-1 bg-light">
             <StatusBar barStyle="light-content" backgroundColor="#3d5300" />
             <Animated.View
                 style={[
@@ -96,7 +102,7 @@ export default function ManageInventoryScreen() {
                         right: 0,
                         top: 0,
                         zIndex: 10,
-                        marginTop: 30,
+                        marginTop: Platform.OS === 'android' ? 25 : 0,
                     },
                 ]}
             >
@@ -192,6 +198,49 @@ export default function ManageInventoryScreen() {
                                 <Text className="text-gray-600">
                                     Stock: {item.stockCount}
                                 </Text>
+                                <View className="mt-2 flex-row">
+                                    <TouchableOpacity
+                                        className="mr-2 rounded-lg bg-primary/10 p-2"
+                                        onPress={() => {
+                                            console.log(item);
+                                            router.push({
+                                                pathname:
+                                                    '/(vendor)/tabs/(inventory)/edit-menu-item',
+                                                params: {
+                                                    menuItem:
+                                                        JSON.stringify(item),
+                                                },
+                                            });
+                                        }}
+                                    >
+                                        <Edit2
+                                            stroke="#3d5300"
+                                            width={20}
+                                            height={20}
+                                        />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        className="rounded-lg bg-red-100 p-2"
+                                        onPress={() =>
+                                            handleDelete(item.id as string)
+                                        }
+                                    >
+                                        <Trash2
+                                            stroke="#dc2626"
+                                            width={20}
+                                            height={20}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                            <View className="absolute right-4 top-4">
+                                <View className="rounded-full bg-green-100 px-3 py-1">
+                                    <Text className="text-sm text-green-800">
+                                        {item.isAvailable
+                                            ? 'Available'
+                                            : 'Unavailable'}
+                                    </Text>
+                                </View>
                             </View>
                         </View>
                     </Animated.View>

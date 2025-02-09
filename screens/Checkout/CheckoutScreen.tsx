@@ -21,29 +21,25 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { CartItem } from '@/types/cart';
 import { ExternalPathString, router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import generateCheckoutLink from '@/data/paymongo/generateCheckoutLink';
-import { queryAllDocuments } from '@/lib/firebase/firestore';
-import { Collections } from '@/types/collections';
+import { Order, OrderItem } from '@/types/order';
+import { OrderStatus, PaymentMethod } from '@/types/enums';
 
 function CheckoutScreen() {
     const [loading, setLoading] = useState(false);
     const params = useLocalSearchParams();
-    const cartItems = JSON.parse(params.cartItems as string);
-    const [selectedPayment, setSelectedPayment] = useState<
-        'counter' | 'online' | null
-    >(null);
+    const cartItems: CartItem[] = JSON.parse(params.cartItems as string);
+    const [selectedPayment, setSelectedPayment] =
+        useState<PaymentMethod | null>(null);
     const insets = useSafeAreaInsets();
 
     const scrollY = useSharedValue(0);
-
     const headerStyle = useAnimatedStyle(() => ({
         opacity: interpolate(scrollY.value, [0, 100], [1, 1], 'clamp'),
     }));
 
     function calculateTotal() {
         return cartItems.reduce(
-            (sum: number, item: { price: number; quantity: number }) =>
-                sum + item.price * item.quantity,
+            (sum, item) => sum + item.price * item.quantity,
             0
         );
     }
@@ -58,18 +54,38 @@ function CheckoutScreen() {
         }
 
         setLoading(true);
+
         setTimeout(async () => {
             setLoading(false);
-            // change payment method of the order depending on selected payment
-            if (selectedPayment === 'counter') {
-                router.push({
-                    pathname: '/(customer)/order-details',
-                });
-            } else {
-                router.push({
-                    pathname: '/(customer)/order-details',
-                });
-            }
+
+            // Construct the order object based on the schema
+            const orderDetails: Order = {
+                id: `ORD-${Math.floor(Math.random() * 1000000)}`, // Generate a mock order ID
+                userId: 'mock-user-id', // Replace with actual user ID from auth
+                shopId: 'mock-shop-id', // Replace with actual shop ID if available
+                customerName: 'John Doe', // Replace with actual customer name
+                items: cartItems.map((item) => ({
+                    menuItemId: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    subtotal: item.price * item.quantity,
+                })) as OrderItem[],
+                total: calculateTotal(),
+                status: OrderStatus.Pending, // Default order status
+                paymentMethod: selectedPayment,
+                paymentId:
+                    selectedPayment === PaymentMethod.Online
+                        ? `PAY-${Math.floor(Math.random() * 1000000)}`
+                        : undefined,
+            };
+
+            router.push({
+                pathname: '/(customer)/order-details',
+                params: {
+                    orderDetails: JSON.stringify(orderDetails), // Pass as JSON string
+                },
+            });
         }, 2000);
     }
 
@@ -115,7 +131,7 @@ function CheckoutScreen() {
                     <Text className="mb-2 text-xl font-bold text-green-800">
                         Order Summary
                     </Text>
-                    {cartItems.map((item: CartItem, index: number) => (
+                    {cartItems.map((item: CartItem) => (
                         <View
                             key={item.id}
                             className="mb-2 flex-row justify-between"
@@ -148,37 +164,31 @@ function CheckoutScreen() {
                         Payment Method
                     </Text>
                     <TouchableOpacity
-                        onPress={() => setSelectedPayment('counter')}
+                        onPress={() =>
+                            setSelectedPayment(PaymentMethod.Counter)
+                        }
                         className={`mb-2 rounded-lg border-2 p-4 ${
-                            selectedPayment === 'counter'
+                            selectedPayment === PaymentMethod.Counter
                                 ? 'border-green-800 bg-green-100'
                                 : 'border-gray-300'
                         }`}
                     >
                         <Text
-                            className={`text-base ${
-                                selectedPayment === 'counter'
-                                    ? 'font-bold text-green-800'
-                                    : 'text-gray-800'
-                            }`}
+                            className={`text-base ${selectedPayment === PaymentMethod.Counter ? 'font-bold text-green-800' : 'text-gray-800'}`}
                         >
                             Pay at the counter
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        onPress={() => setSelectedPayment('online')}
+                        onPress={() => setSelectedPayment(PaymentMethod.Online)}
                         className={`rounded-lg border-2 p-4 ${
-                            selectedPayment === 'online'
+                            selectedPayment === PaymentMethod.Online
                                 ? 'border-green-800 bg-green-100'
                                 : 'border-gray-300'
                         }`}
                     >
                         <Text
-                            className={`text-base ${
-                                selectedPayment === 'online'
-                                    ? 'font-bold text-green-800'
-                                    : 'text-gray-800'
-                            }`}
+                            className={`text-base ${selectedPayment === PaymentMethod.Online ? 'font-bold text-green-800' : 'text-gray-800'}`}
                         >
                             Pay online
                         </Text>
@@ -193,9 +203,7 @@ function CheckoutScreen() {
                 <TouchableOpacity
                     onPress={handlePlaceOrder}
                     disabled={loading}
-                    className={`${
-                        loading ? 'bg-gray-400' : 'bg-green-800'
-                    } items-center rounded-lg p-4`}
+                    className={`${loading ? 'bg-gray-400' : 'bg-green-800'} items-center rounded-lg p-4`}
                 >
                     {loading ? (
                         <ActivityIndicator color="#ffffff" />
