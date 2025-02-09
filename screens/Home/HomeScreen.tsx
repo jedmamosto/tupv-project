@@ -18,6 +18,8 @@ import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import { queryAllDocuments } from '@/lib/firebase/firestore';
+import { Collections } from '@/types/collections';
 
 function HomeScreen() {
     const [shops, setShops] = useState<Shop[]>([]);
@@ -27,12 +29,11 @@ function HomeScreen() {
     const { user } = useAuth();
     const { cartItems } = useCart();
 
-    function fetchShops() {
+    async function fetchShops() {
         setLoading(true);
-        setTimeout(() => {
-            setShops(mockShops);
-            setLoading(false);
-        }, 1500);
+        const shops = await queryAllDocuments(Collections.Shops);
+        setShops(shops.data as Shop[]);
+        setLoading(false);
     }
 
     useEffect(() => {
