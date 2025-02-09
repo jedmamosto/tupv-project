@@ -15,7 +15,12 @@
             "adaptiveIcon": {
                 "foregroundImage": "./assets/images/adaptive-icon.png",
                 "backgroundColor": "#ffffff"
-            }
+            },
+            "permissions": [
+                "android.permission.CAMERA",
+                "android.permission.RECORD_AUDIO"
+            ],
+            "package": "com.samsamsamilo.tupvproject"
         },
         "web": {
             "bundler": "metro",
@@ -34,12 +39,6 @@
                 }
             ],
             [
-                "expo-image-picker",
-                {
-                    "photosPermission": "The app accesses your photos to let you upload photos."
-                }
-            ],
-            [
                 "expo-camera",
                 {
                     "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
@@ -50,6 +49,15 @@
         ],
         "experiments": {
             "typedRoutes": true
-        }
+        },
+        "extra": {
+            "router": {
+                "origin": false
+            },
+            "eas": {
+                "projectId": "4841c218-8904-467d-a6ce-b075c4962704"
+            }
+        },
+        "owner": "samsamsamilo"
     }
 }

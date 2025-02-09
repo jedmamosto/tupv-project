@@ -13,7 +13,7 @@ import { auth } from '@/lib/firebase/config';
 import { signOut } from '@firebase/auth';
 import { Button } from '@/components/custom/Button';
 import { queryAllDocuments } from '@/lib/firebase/firestore';
-import { Order } from '@/types/vendor';
+import { Order } from '@/types/order';
 import { Collections } from '@/types/collections';
 import { router } from 'expo-router';
 import { MenuItem } from '@/types/shop';

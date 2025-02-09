@@ -1,10 +1,18 @@
+'use client';
+
+import { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { ArrowLeft } from 'react-native-feather';
 import { Button } from '@/components/custom/Button';
 import InputField from '@/components/custom/InputField';
 import { useAuth } from '@/contexts/AuthContext';
 import { uploadDocument } from '@/lib/firebase/firestore';
-import { MenuItem } from '@/types/shop';
-import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, View } from 'react-native';
+import { Collections } from '@/types/collections';
+import type { MenuItem } from '@/types/shop';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 
@@ -12,7 +20,7 @@ export default function AddMenuItemScreen() {
     const { user } = useAuth();
 
     const [image, setImage] = useState<string | null>(null);
-    const [newMenuItem, setNewMenuItem] = useState<MenuItem>({
+    const [menuItem, setMenuItem] = useState<MenuItem>({
         vendorId: user?.id as string,
         name: '',
         price: 0,
@@ -20,149 +28,151 @@ export default function AddMenuItemScreen() {
         isAvailable: true,
         stockCount: 0,
     });
+    const [errors, setErrors] = useState({
+        name: '',
+        price: '',
+        stockCount: '',
+    });
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [1, 1],
             quality: 1,
         });
 
-        console.log(result);
-
         if (!result.canceled) {
             setImage(result.assets[0].uri);
-            return result.assets[0].uri;
+            setMenuItem((prev) => ({ ...prev, image: result.assets[0].uri }));
         }
     };
 
-    // TODO: Sam add validations (check for inputs)
+    function validateForm() {
+        let isValid = true;
+        const newErrors = { name: '', price: '', stockCount: '' };
 
-    // directly call firestore operations
-    const handleAddItem = async () => {
-        console.log(newMenuItem);
-
-        const createMenuItem = await uploadDocument<MenuItem>(
-            'menu_items',
-            newMenuItem
-        );
-
-        if (!createMenuItem.success || !createMenuItem.docId) {
-            console.log('Menu creation failed');
-        } else {
-            console.log('SUCCESS');
+        if (!menuItem.name.trim()) {
+            newErrors.name = 'Name is required';
+            isValid = false;
         }
-    };
-
-    const handleImageUpload = async () => {
-        const imageUri = await pickImage();
-
-        if (imageUri) {
-            console.log('Local upload complete');
+        if (menuItem.price <= 0) {
+            newErrors.price = 'Price must be greater than 0';
+            isValid = false;
         }
-    };
+        if (menuItem.stockCount < 0) {
+            newErrors.stockCount = 'Stock count cannot be negative';
+            isValid = false;
+        }
 
-    // create a form to put in the data
+        setErrors(newErrors);
+        return isValid;
+    }
+
+    async function handleAddItem() {
+        if (!validateForm()) return;
+
+        try {
+            const createResult = await uploadDocument<MenuItem>(
+                Collections.MenuItems,
+                menuItem
+            );
+            if (createResult.success) {
+                Alert.alert('Success', 'Menu item added successfully');
+                router.back();
+            } else {
+                Alert.alert('Error', 'Failed to add menu item');
+            }
+        } catch (error) {
+            console.error('Error adding menu item:', error);
+            Alert.alert('Error', 'An unexpected error occurred');
+        }
+    }
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
-            <ScrollView className="flex-1">
-                <View className="p-4">
-                    {image && (
-                        <Image
-                            source={{ uri: image }}
-                            style={{
-                                width: 100,
-                                height: 100,
-                                borderRadius: 8,
-                            }}
-                        />
-                    )}
-                    <Button
-                        label={'Upload an Image'}
-                        onPress={handleImageUpload}
-                    />
-                    <InputField
-                        label="Name"
-                        placeholder="The name of your menu item"
-                        onChangeText={(input) => {
-                            setNewMenuItem((prev) => ({
-                                ...prev,
-                                name: input,
-                            }));
-                        }}
-                        value={newMenuItem.name}
-                    />
-                    <InputField
-                        label="Price"
-                        placeholder="The price of your menu item"
-                        keyboardType="name-phone-pad"
-                        onChangeText={(input) => {
-                            const cleanInput = input.replace(/[^0-9.]/g, '');
-
-                            if (!cleanInput) {
-                                setNewMenuItem((prev) => ({
-                                    ...prev,
-                                    price: 0,
-                                }));
-                                return;
-                            }
-
-                            const number = parseFloat(cleanInput);
-
-                            // Only update if we have a valid number
-                            if (!isNaN(number)) {
-                                const formattedNumber = parseFloat(
-                                    number.toFixed(2)
-                                );
-                                setNewMenuItem((prev) => ({
-                                    ...prev,
-                                    price: formattedNumber,
-                                }));
-                            }
-                        }}
-                        value={newMenuItem.price.toString()}
-                    />
-                    <InputField
-                        label="Stock Count"
-                        placeholder="The stock count of your menu item"
-                        keyboardType="number-pad"
-                        inputMode="numeric"
-                        onChangeText={(input) => {
-                            const cleanInput = input.replace(/[^0-9.]/g, '');
-
-                            if (!cleanInput) {
-                                setNewMenuItem((prev) => ({
-                                    ...prev,
-                                    stockCount: 0,
-                                }));
-                                return;
-                            }
-
-                            const number = parseFloat(cleanInput);
-
-                            // Only update if we have a valid number
-                            if (!isNaN(number)) {
-                                const formattedNumber = parseFloat(
-                                    number.toFixed(2)
-                                );
-                                setNewMenuItem((prev) => ({
-                                    ...prev,
-                                    stockCount: formattedNumber,
-                                }));
-                            }
-                        }}
-                        value={newMenuItem.stockCount?.toString()}
-                    />
-                    <Button
-                        label="Create Item"
-                        onPress={() => {
-                            handleAddItem();
-                        }}
-                    />
+        <SafeAreaView className="flex-1 bg-gray-100" edges={['bottom']}>
+            <View className="flex-1">
+                <LinearGradient
+                    colors={[
+                        'rgba(61, 83, 0, 0.9)',
+                        'rgba(61, 83, 0, 0.7)',
+                        'transparent',
+                    ]}
+                    className="absolute left-0 right-0 top-0 h-32"
+                />
+                <View className="mt-6 flex-row items-center justify-between p-4">
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="rounded-full bg-white/20 p-2"
+                    >
+                        <ArrowLeft stroke="#fff" width={24} height={24} />
+                    </TouchableOpacity>
+                    <Text className="text-xl font-bold text-white">
+                        Add Menu Item
+                    </Text>
+                    <View style={{ width: 40 }} />
                 </View>
-            </ScrollView>
+
+                <ScrollView className="flex-1 px-4">
+                    <Animated.View
+                        entering={FadeInDown.delay(400).duration(500)}
+                    >
+                        {image && (
+                            <Image
+                                source={{ uri: image }}
+                                style={{
+                                    width: 100,
+                                    height: 100,
+                                    borderRadius: 8,
+                                    alignSelf: 'center',
+                                    marginBottom: 10,
+                                }}
+                            />
+                        )}
+                        <Button label={'Upload an Image'} onPress={pickImage} />
+                        <InputField
+                            label="Name"
+                            placeholder="Item name"
+                            value={menuItem.name}
+                            onChangeText={(text) =>
+                                setMenuItem((prev) => ({ ...prev, name: text }))
+                            }
+                            error={errors.name}
+                        />
+                        <InputField
+                            label="Price"
+                            placeholder="Item price"
+                            keyboardType="decimal-pad"
+                            value={menuItem.price.toString()}
+                            onChangeText={(text) =>
+                                setMenuItem((prev) => ({
+                                    ...prev,
+                                    price: parseFloat(text) || 0,
+                                }))
+                            }
+                            error={errors.price}
+                        />
+                        <InputField
+                            label="Stock Count"
+                            placeholder="Available stock count"
+                            keyboardType="number-pad"
+                            value={menuItem.stockCount.toString()}
+                            onChangeText={(text) =>
+                                setMenuItem((prev) => ({
+                                    ...prev,
+                                    stockCount: parseInt(text) || 0,
+                                }))
+                            }
+                            error={errors.stockCount}
+                        />
+                        <Button
+                            label="Add Item"
+                            onPress={handleAddItem}
+                            pressableClassName="mt-6 bg-primary"
+                        />
+                    </Animated.View>
+                </ScrollView>
+            </View>
         </SafeAreaView>
     );
 }
