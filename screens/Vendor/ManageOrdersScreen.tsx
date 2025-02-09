@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -15,42 +15,118 @@ import {
     CheckCircle,
     XCircle,
 } from 'react-native-feather';
-import type { Order } from '../../types/vendor';
-import { mockOrders } from '../../data/orderMockData';
 import { router } from 'expo-router';
+import { Collections } from '@/types/collections';
+import { queryAllDocuments, updateDocument } from '@/lib/firebase/firestore';
+import { MenuItem } from '@/types/shop';
+import { Order } from '@/types/order';
+import { OrderStatus } from '@/types/enums';
+import { Timestamp } from 'firebase/firestore';
 
-function getStatusColor(status: Order['status']) {
+function getStatusColor(status: OrderStatus) {
     switch (status) {
-        case 'received':
-            return '#fef9c3';
-        case 'ready':
-            return '#dbeafe';
-        case 'complete':
-            return '#dcfce7';
-        case 'cancelled':
-            return '#fee2e2';
+        case OrderStatus.Pending:
+            return '#fef9c3'; // Yellow
+        case OrderStatus.Processing:
+            return '#dbeafe'; // Blue
+        case OrderStatus.Completed:
+            return '#dcfce7'; // Green
+        case OrderStatus.Cancelled:
+            return '#fee2e2'; // Red
         default:
-            return '#f3f4f6';
+            return '#f3f4f6'; // Gray
     }
 }
 
 export default function ManageOrdersScreen() {
-    const [selectedStatus, setSelectedStatus] =
-        useState<Order['status']>('received');
+    const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(
+        OrderStatus.Pending
+    );
+
     const statuses: {
-        status: Order['status'];
+        status: OrderStatus;
         icon: any;
         label: string;
     }[] = [
-        { status: 'received', icon: Package, label: 'Received' },
-        { status: 'ready', icon: Clock, label: 'Ready' },
-        { status: 'complete', icon: CheckCircle, label: 'Complete' },
-        { status: 'cancelled', icon: XCircle, label: 'Cancelled' },
+        { status: OrderStatus.Pending, icon: Package, label: 'Pending' },
+        { status: OrderStatus.Processing, icon: Clock, label: 'Processing' },
+        {
+            status: OrderStatus.Completed,
+            icon: CheckCircle,
+            label: 'Completed',
+        },
+        { status: OrderStatus.Cancelled, icon: XCircle, label: 'Cancelled' },
     ];
 
-    const filteredOrders = mockOrders.filter(
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+
+    const fetchOrders = async () => {
+        const response = await queryAllDocuments<Order>(Collections.Orders);
+
+        if (!response.success || !response.data) {
+            console.error('Order data fetching failed', response.error);
+            return;
+        }
+
+        setOrders(response.data);
+    };
+
+    const fetchMenuItems = async () => {
+        const response = await queryAllDocuments<MenuItem>(
+            Collections.MenuItems
+        );
+
+        if (!response.success || !response.data) {
+            console.error('Inventory data fetching failed', response.error);
+            return;
+        }
+
+        const queriedMenuItems = response.data;
+        const orderIds = orders.flatMap((order) =>
+            order.items.map((item) => item.menuItemId)
+        );
+
+        setMenuItems(
+            queriedMenuItems.filter((item) =>
+                orderIds.includes(item.id as string)
+            )
+        );
+    };
+
+    useEffect(() => {
+        fetchOrders();
+        fetchMenuItems();
+    }, []);
+
+    const filteredOrders = orders.filter(
         (order) => order.status === selectedStatus
     );
+
+    const handleOrderUpdate = async (order: Order, status: OrderStatus) => {
+        const updatedOrder: Order = {
+            ...order,
+            status,
+            updatedAt: Timestamp.now(),
+        };
+
+        const orderUpdate = await updateDocument<Order>(
+            Collections.Orders,
+            order.id,
+            updatedOrder
+        );
+
+        if (!orderUpdate.success) {
+            console.error('Order status update failed');
+            return;
+        }
+
+        setOrders((currentOrders) =>
+            currentOrders.map((currentOrder) =>
+                currentOrder.id === order.id ? updatedOrder : currentOrder
+            )
+        );
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-light">
@@ -77,7 +153,11 @@ export default function ManageOrdersScreen() {
                         <TouchableOpacity
                             key={status}
                             onPress={() => setSelectedStatus(status)}
-                            className={`flex-1 items-center py-3 ${selectedStatus === status ? 'border-b-2 border-primary' : ''}`}
+                            className={`flex-1 items-center py-3 ${
+                                selectedStatus === status
+                                    ? 'border-b-2 border-primary'
+                                    : ''
+                            }`}
                         >
                             <Icon
                                 stroke={
@@ -89,7 +169,11 @@ export default function ManageOrdersScreen() {
                                 height={20}
                             />
                             <Text
-                                className={`mt-1 text-sm font-medium ${selectedStatus === status ? 'text-primary' : 'text-gray-600'}`}
+                                className={`mt-1 text-sm font-medium ${
+                                    selectedStatus === status
+                                        ? 'text-primary'
+                                        : 'text-gray-600'
+                                }`}
                             >
                                 {label}
                             </Text>
@@ -102,7 +186,7 @@ export default function ManageOrdersScreen() {
                     {filteredOrders.length === 0 ? (
                         <View className="flex-1 items-center justify-center py-8">
                             <Text className="text-gray-500">
-                                No {selectedStatus} orders
+                                No {selectedStatus.toLowerCase()} orders
                             </Text>
                         </View>
                     ) : (
@@ -120,29 +204,33 @@ export default function ManageOrdersScreen() {
                                 <View className="p-4">
                                     <View className="mb-2 flex-row items-center justify-between">
                                         <Text className="text-lg font-bold text-primary">
-                                            Order #{order.orderNumber}
+                                            Order #
+                                            {order.id.slice(-6).toUpperCase()}
                                         </Text>
                                         <View
                                             className={`rounded-full px-3 py-1 ${
-                                                order.status === 'received'
+                                                order.status ===
+                                                OrderStatus.Pending
                                                     ? 'bg-yellow-100'
-                                                    : order.status === 'ready'
+                                                    : order.status ===
+                                                        OrderStatus.Processing
                                                       ? 'bg-blue-100'
                                                       : order.status ===
-                                                          'complete'
+                                                          OrderStatus.Completed
                                                         ? 'bg-green-100'
                                                         : 'bg-red-100'
                                             }`}
                                         >
                                             <Text
                                                 className={`text-sm ${
-                                                    order.status === 'received'
+                                                    order.status ===
+                                                    OrderStatus.Pending
                                                         ? 'text-yellow-800'
                                                         : order.status ===
-                                                            'ready'
+                                                            OrderStatus.Processing
                                                           ? 'text-blue-800'
                                                           : order.status ===
-                                                              'complete'
+                                                              OrderStatus.Completed
                                                             ? 'text-green-800'
                                                             : 'text-red-800'
                                                 }`}
@@ -154,24 +242,30 @@ export default function ManageOrdersScreen() {
                                     <Text className="mb-2 text-gray-600">
                                         Customer: {order.customerName}
                                     </Text>
-                                    {order.items.map((item) => (
-                                        <View
-                                            key={item.menuItem.id}
-                                            className="mb-1 flex-row items-center justify-between"
-                                        >
-                                            <Text className="text-primary">
-                                                {item.quantity}x{' '}
-                                                {item.menuItem.name}
-                                            </Text>
-                                            <Text className="text-primary">
-                                                ₱
-                                                {(
-                                                    item.menuItem.price *
-                                                    item.quantity
-                                                ).toFixed(2)}
-                                            </Text>
-                                        </View>
-                                    ))}
+                                    {order.items.map((orderItem) => {
+                                        const menuItem = menuItems.find(
+                                            (item) =>
+                                                item.id === orderItem.menuItemId
+                                        );
+                                        return (
+                                            <View
+                                                key={orderItem.menuItemId}
+                                                className="mb-1 flex-row items-center justify-between"
+                                            >
+                                                <Text className="text-primary">
+                                                    {orderItem.quantity}x{' '}
+                                                    {menuItem?.name ??
+                                                        'Unknown Item'}
+                                                </Text>
+                                                <Text className="text-primary">
+                                                    ₱
+                                                    {orderItem.subtotal.toFixed(
+                                                        2
+                                                    )}
+                                                </Text>
+                                            </View>
+                                        );
+                                    })}
                                     <View className="mt-2 border-t border-gray-200 pt-2">
                                         <View className="flex-row justify-between">
                                             <Text className="font-bold text-primary">
@@ -183,46 +277,59 @@ export default function ManageOrdersScreen() {
                                         </View>
                                     </View>
                                     <View className="mt-4 flex-row">
-                                        {order.status === 'received' && (
+                                        {order.status ===
+                                            OrderStatus.Pending && (
                                             <TouchableOpacity
                                                 className="mr-2 flex-1 rounded-lg bg-primary px-4 py-2"
-                                                onPress={() =>
-                                                    console.log(
-                                                        'Mark as ready',
-                                                        order.id
-                                                    )
-                                                }
+                                                onPress={() => {
+                                                    setSelectedStatus(
+                                                        OrderStatus.Processing
+                                                    );
+                                                    handleOrderUpdate(
+                                                        order,
+                                                        OrderStatus.Processing
+                                                    );
+                                                }}
                                             >
                                                 <Text className="text-center font-medium text-light">
-                                                    Mark as Ready
+                                                    Start Processing
                                                 </Text>
                                             </TouchableOpacity>
                                         )}
-                                        {order.status === 'ready' && (
+                                        {order.status ===
+                                            OrderStatus.Processing && (
                                             <TouchableOpacity
                                                 className="mr-2 flex-1 rounded-lg bg-primary px-4 py-2"
-                                                onPress={() =>
-                                                    console.log(
-                                                        'Mark as complete',
-                                                        order.id
-                                                    )
-                                                }
+                                                onPress={() => {
+                                                    setSelectedStatus(
+                                                        OrderStatus.Completed
+                                                    );
+                                                    handleOrderUpdate(
+                                                        order,
+                                                        OrderStatus.Completed
+                                                    );
+                                                }}
                                             >
                                                 <Text className="text-center font-medium text-light">
-                                                    Mark as Complete
+                                                    Mark as Completed
                                                 </Text>
                                             </TouchableOpacity>
                                         )}
-                                        {(order.status === 'received' ||
-                                            order.status === 'ready') && (
+                                        {(order.status ===
+                                            OrderStatus.Pending ||
+                                            order.status ===
+                                                OrderStatus.Processing) && (
                                             <TouchableOpacity
                                                 className="flex-1 rounded-lg bg-red-500 px-4 py-2"
-                                                onPress={() =>
-                                                    console.log(
-                                                        'Cancel order',
-                                                        order.id
-                                                    )
-                                                }
+                                                onPress={() => {
+                                                    setSelectedStatus(
+                                                        OrderStatus.Cancelled
+                                                    );
+                                                    handleOrderUpdate(
+                                                        order,
+                                                        OrderStatus.Cancelled
+                                                    );
+                                                }}
                                             >
                                                 <Text className="text-center font-medium text-light">
                                                     Cancel Order

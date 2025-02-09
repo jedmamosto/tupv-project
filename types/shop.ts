@@ -1,62 +1,20 @@
 export interface MenuItem {
-    id: string;
+    id?: string;
+    vendorId: string;
     name: string;
     price: number;
     image: any;
-    available: boolean;
+    isAvailable: boolean;
     description?: string;
-    category?: string;
-    quantity?: number;
-    options?: {
-        name: string;
-        choices: {
-            id: string;
-            name: string;
-            price?: number;
-        }[];
-    }[];
-}
-
-export interface ProductCategory {
-    id: string;
-    name: string;
+    stockCount: number;
 }
 
 export interface Shop {
     id: string;
+    vendorId: string;
     name: string;
     coverImage: any;
     description?: string;
-    categories?: ProductCategory[];
-    featuredItems: MenuItem[];
-    menuItems: MenuItem[];
-}
-
-export interface CartItem extends MenuItem {
-    quantity: number;
-}
-
-export interface Order {
-    id: string;
-    shopId: string;
-    items: CartItem[];
-    total: number;
-    status: 'pending' | 'processing' | 'completed' | 'cancelled';
-    paymentMethod: 'counter' | 'online';
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export interface User {
-    id: string;
-    name: string;
-    email: string;
-    phoneNumber?: string;
-    orders?: Order[];
-}
-
-export interface PaymentMethod {
-    id: string;
-    name: string;
-    type: 'counter' | 'online';
+    qrCode?: string;
+    menuItems: string[];
 }

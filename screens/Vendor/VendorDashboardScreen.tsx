@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -8,12 +8,15 @@ import {
     Platform,
 } from 'react-native';
 import { Package, Code, Clipboard, ArrowLeft } from 'react-native-feather';
-import { mockRecentOrder } from '../../data/vendorMockData';
-import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase/config';
 import { signOut } from '@firebase/auth';
 import { Button } from '@/components/custom/Button';
+import { queryAllDocuments } from '@/lib/firebase/firestore';
+import { Order } from '@/types/vendor';
+import { Collections } from '@/types/collections';
+import { router } from 'expo-router';
+import { MenuItem } from '@/types/shop';
 
 export default function VendorDashboardScreen() {
     const navItems = [
@@ -34,6 +37,56 @@ export default function VendorDashboardScreen() {
         },
     ];
     const { user } = useAuth();
+
+    const [recentOrder, setRecentOrder] = useState<Order>();
+    const [menuItem, setMenuItem] = useState<MenuItem[]>();
+
+    const fetchRecentOrder = async () => {
+        const response = await queryAllDocuments<Order>(Collections.Orders);
+
+        if (!response.success || !response.data) {
+            console.error('Order fetching failed', response.error);
+            return;
+        }
+
+        const orders = response.data;
+
+        const sortedOrders = [...orders].sort(
+            (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
+        );
+
+        setRecentOrder(sortedOrders[0]);
+    };
+
+    const fetchMenuItems = async () => {
+        const response = await queryAllDocuments<MenuItem>(
+            Collections.MenuItems
+        );
+
+        if (!response.success || !response.data) {
+            console.error('Inventory data fetching failed', response.error);
+            return;
+        }
+
+        const queriedMenuItems = response.data;
+
+        // Get the menuItemIds from the recent order
+        const orderMenuItemIds = recentOrder?.items.map(
+            (item) => item.menuItemId
+        );
+
+        // Filter menu items that match the IDs from the recent order
+        setMenuItem(
+            queriedMenuItems.filter((item) =>
+                orderMenuItemIds?.includes(item.id as string)
+            )
+        );
+    };
+
+    useEffect(() => {
+        fetchRecentOrder();
+        fetchMenuItems();
+    }, []);
 
     return (
         <SafeAreaView className="flex-1 bg-[#f5f5f5]">
@@ -95,43 +148,54 @@ export default function VendorDashboardScreen() {
                         >
                             <View className="mb-3 flex-row items-center justify-between">
                                 <Text className="text-lg font-bold text-primary">
-                                    Order #{mockRecentOrder.orderNumber}
+                                    Order #{recentOrder?.id}
                                 </Text>
                                 <View className="rounded-full bg-[#fff3cd] px-3 py-1">
                                     <Text className="text-sm font-medium text-[#856404]">
-                                        {mockRecentOrder.status.toUpperCase()}
+                                        {recentOrder?.status.toUpperCase()}
                                     </Text>
                                 </View>
                             </View>
                             <Text className="mb-3 text-gray-600">
-                                Customer: {mockRecentOrder.customerName}
+                                Customer: {recentOrder?.customerName}
                             </Text>
-                            {mockRecentOrder.items.map((item) => (
-                                <View
-                                    key={item.menuItem.id}
-                                    className="mb-2 flex-row justify-between"
-                                >
-                                    <Text className="text-primary">
-                                        {item.quantity}x {item.menuItem.name}
-                                    </Text>
-                                    <Text className="font-medium text-primary">
-                                        ₱
-                                        {(
-                                            item.menuItem.price * item.quantity
-                                        ).toFixed(2)}
-                                    </Text>
-                                </View>
-                            ))}
-                            <View className="mt-3 border-t border-gray-100 pt-3">
-                                <View className="flex-row justify-between">
-                                    <Text className="font-bold text-primary">
-                                        Total
-                                    </Text>
-                                    <Text className="font-bold text-primary">
-                                        ₱{mockRecentOrder.total.toFixed(2)}
-                                    </Text>
-                                </View>
-                            </View>
+                            {recentOrder?.items.map((orderItem) => {
+                                const menuItemDetails = menuItem?.find(
+                                    (menu) => menu.id === orderItem.menuItemId
+                                );
+
+                                return (
+                                    <View
+                                        key={orderItem.menuItemId}
+                                        className="mb-2 flex-row justify-between"
+                                    >
+                                        <Text className="text-primary">
+                                            {/* Display quantity and name */}
+                                            {menuItemDetails?.quantity}x{' '}
+                                            {menuItemDetails?.name}
+                                        </Text>
+                                        <Text className="font-medium text-primary">
+                                            ₱
+                                            {(
+                                                menuItemDetails?.price || 0
+                                            ).toFixed(2)}
+                                        </Text>
+                                        <View className="mt-3 border-t border-gray-100 pt-3">
+                                            <View className="flex-row justify-between">
+                                                <Text className="font-bold text-primary">
+                                                    Total
+                                                </Text>
+                                                <Text className="font-bold text-primary">
+                                                    ₱
+                                                    {menuItemDetails?.price.toFixed(
+                                                        2
+                                                    )}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                );
+                            })}
                         </TouchableOpacity>
                     </View>
                     <View className="mt-16">
