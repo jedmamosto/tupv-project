@@ -68,6 +68,37 @@ export async function uploadDocument<T extends object>(
     }
 }
 
+export async function queryDocumentById<T extends object>(
+    collectionName: string,
+    id: string
+): Promise<FirestoreResponse<T>> {
+    try {
+        const docRef = doc(db, collectionName, id);
+        const docSnapshot = await getDoc(docRef);
+
+        if (!docSnapshot.exists()) {
+            throw new Error('Document not found');
+        }
+
+        const docData = docSnapshot.data() as T;
+
+        return {
+            success: true,
+            docId: id,
+            data: docData,
+        };
+    } catch (error) {
+        console.error('Error encountered querying document by ID', error);
+        return {
+            success: false,
+            error:
+                error instanceof Error
+                    ? error.message
+                    : 'Unknown error occurred',
+        };
+    }
+}
+
 export async function queryAllDocuments<T extends object>(
     collectionName: string
 ): Promise<FirestoreResponse<T[]>> {
