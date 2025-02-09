@@ -20,15 +20,16 @@ import Animated, {
     useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
 import { deleteDocument, queryAllDocuments } from '@/lib/firebase/firestore';
 import { Collections } from '@/types/collections';
 import type { MenuItem } from '@/types/shop';
+import { useRouter } from 'expo-router';
 
 const AnimatedTouchableOpacity =
     Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function ManageInventoryScreen() {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [inventory, setInventory] = useState<MenuItem[]>([]);
     const [refreshing, setRefreshing] = useState(false);
