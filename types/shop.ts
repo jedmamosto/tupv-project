@@ -15,7 +15,7 @@ export interface Shop {
     name: string;
     coverImage: any;
     description?: string;
-    category: string;
+    category?: string;
     qrCode?: string;
     menuItems: string[];
 }
